@@ -3,7 +3,6 @@ import { ActivityIndicator, View } from "react-native";
 import AuthNavigator from "./AuthNavigator";
 import MainNavigator from "./MainNavigator";
 
-import { ENABLE_MAIN_TABS_PREVIEW } from "../constants/dev-preview";
 import { useAuth } from "../context/AuthContext";
 
 export default function RootNavigator() {
@@ -12,7 +11,7 @@ export default function RootNavigator() {
     loading,
   } = useAuth();
 
-  if (loading && !ENABLE_MAIN_TABS_PREVIEW) {
+  if (loading) {
     return (
       <View
         style={{
@@ -26,7 +25,7 @@ export default function RootNavigator() {
     );
   }
 
-  return token || ENABLE_MAIN_TABS_PREVIEW ? (
+  return token ? (
     <MainNavigator />
   ) : (
     <AuthNavigator />
