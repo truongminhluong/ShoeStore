@@ -1,12 +1,9 @@
-import { useState } from "react";
 import { FlatList, StyleSheet, View } from "react-native";
 
 import { brands } from "../../data/brandData";
 import BrandItem from "./BrandItem";
 
-export default function BrandSection() {
-  const [selectedId, setSelectedId] = useState("1");
-
+export default function BrandSection({ selectedBrandId, onSelectBrand }) {
   return (
     <View style={styles.container}>
       <FlatList
@@ -14,12 +11,12 @@ export default function BrandSection() {
         data={brands}
         keyExtractor={(item) => item.id}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 20 }}
+        contentContainerStyle={styles.listContent}
         renderItem={({ item }) => (
           <BrandItem
             item={item}
-            selected={item.id === selectedId}
-            onPress={() => setSelectedId(item.id)}
+            selected={item.id === selectedBrandId}
+            onPress={() => onSelectBrand(item)}
           />
         )}
       />
@@ -30,5 +27,9 @@ export default function BrandSection() {
 const styles = StyleSheet.create({
   container: {
     marginTop: 20,
+  },
+
+  listContent: {
+    paddingHorizontal: 20,
   },
 });
