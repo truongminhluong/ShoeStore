@@ -30,7 +30,7 @@ export default function PopularSection() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 28,
+    marginTop: 20,
   },
 
   title: {

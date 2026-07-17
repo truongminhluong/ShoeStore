@@ -1,73 +1,77 @@
 import { TouchableOpacity, View, Image, Text, StyleSheet } from "react-native";
-import COLORS from "../../constants/colors";
 
-export default function BrandItem({
-  item,
-  selected,
-  onPress,
-}) {
+export default function BrandItem({ item, onPress }) {
   return (
     <TouchableOpacity
-      style={[
-        styles.container,
-        selected && styles.selectedContainer,
-      ]}
+      style={styles.container}
+      activeOpacity={0.8}
       onPress={onPress}
     >
       <View style={styles.logoContainer}>
         <Image
-          source={item.logo}
+          source={{ uri: item.logo }}
           style={styles.logo}
           resizeMode="contain"
         />
       </View>
 
-      {selected && (
-        <Text style={styles.name}>
-          {item.name}
-        </Text>
-      )}
+      <Text numberOfLines={1} style={styles.name}>
+        {item.name}
+      </Text>
     </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    height: 58,
-    paddingHorizontal: 8,
-    borderRadius: 28,
-
-    backgroundColor: "#fff",
     flexDirection: "row",
     alignItems: "center",
 
-    marginRight: 12,
-  },
+    paddingHorizontal: 12,
+    height: 54,
 
-  selectedContainer: {
-    backgroundColor: "#5A9BEF",
+    backgroundColor: "#FFFFFF",
+
+    borderRadius: 18,
+
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+
+    marginRight: 10,
+
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+
+    elevation: 2,
   },
 
   logoContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
 
-    backgroundColor: "#fff",
+    backgroundColor: "#FFFFFF",
+
     justifyContent: "center",
     alignItems: "center",
   },
 
   logo: {
-    width: 32,
-    height: 32,
+    width: 24,
+    height: 24,
   },
 
   name: {
-    color: "#fff",
-    fontSize: 16,
+    marginLeft: 10,
+
+    color: "#1F2937",
+
+    fontSize: 15,
     fontWeight: "600",
-    marginLeft: 8,
-    marginRight: 8,
   },
 });

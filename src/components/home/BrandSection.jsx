@@ -1,22 +1,36 @@
-import { FlatList, StyleSheet, View } from "react-native";
+import {
+  ActivityIndicator,
+  FlatList,
+  StyleSheet,
+  View,
+} from "react-native";
 
-import { brands } from "../../data/brandData";
 import BrandItem from "./BrandItem";
+import useBrandViewModel from "../../viewmodels/useBrandViewModel";
 
-export default function BrandSection({ selectedBrandId, onSelectBrand }) {
+export default function BrandSection() {
+  const { brands, loading } = useBrandViewModel();
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="small" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <FlatList
         horizontal
         data={brands}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item._id}
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={styles.content}
         renderItem={({ item }) => (
           <BrandItem
             item={item}
-            selected={item.id === selectedBrandId}
-            onPress={() => onSelectBrand(item)}
+            onPress={() => {}}
           />
         )}
       />
@@ -26,10 +40,16 @@ export default function BrandSection({ selectedBrandId, onSelectBrand }) {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 20,
+    marginTop: 18,
   },
 
-  listContent: {
+  content: {
     paddingHorizontal: 20,
+    paddingRight: 10,
+  },
+
+  loadingContainer: {
+    marginTop: 20,
+    alignItems: "center",
   },
 });
