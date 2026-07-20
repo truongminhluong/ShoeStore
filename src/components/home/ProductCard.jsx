@@ -1,122 +1,88 @@
 import {
   View,
   Text,
-  StyleSheet,
   Image,
+  StyleSheet,
   TouchableOpacity,
   Dimensions,
 } from "react-native";
 
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
 
 export default function ProductCard({ item }) {
+  const navigation = useNavigation();
+
+  const handlePress = () => {
+    navigation.navigate("ProductDetail", {
+      productId: item._id,
+    });
+  };
+
   return (
     <TouchableOpacity
-      activeOpacity={0.8}
       style={styles.card}
+      activeOpacity={0.8}
+      onPress={handlePress}
     >
-
       <View style={styles.imageContainer}>
-
         <Image
-          source={{
-            uri: item.image,
-          }}
+          source={{ uri: item.image }}
           style={styles.image}
           resizeMode="cover"
         />
 
-
-        <TouchableOpacity style={styles.favorite}>
-
+        <TouchableOpacity style={styles.favoriteButton}>
           <Ionicons
-            name={
-              item.favorite
-                ? "heart"
-                : "heart-outline"
-            }
-            size={20}
+            name="heart-outline"
+            size={22}
             color="#222"
           />
-
         </TouchableOpacity>
-
       </View>
 
+      <Text style={styles.category}>
+        {item.category?.name}
+      </Text>
 
-      <View style={styles.info}>
+      <Text
+        style={styles.name}
+        numberOfLines={2}
+      >
+        {item.name}
+      </Text>
 
+      <View style={styles.ratingRow}>
+        <Ionicons
+          name="star"
+          size={15}
+          color="#FFB800"
+        />
 
-        <Text style={styles.category}>
-          {item.category?.name}
+        <Text style={styles.rating}>
+          {item.rating}
         </Text>
-
-
-        <Text
-          style={styles.name}
-          numberOfLines={1}
-        >
-          {item.name}
-        </Text>
-
-
-        <Text style={styles.brand}>
-          {item.brand?.name}
-        </Text>
-
-
-        <View style={styles.bottomRow}>
-
-          <View style={styles.ratingRow}>
-
-            <Ionicons
-              name="star"
-              size={15}
-              color="#FFB800"
-            />
-
-            <Text style={styles.rating}>
-              {item.rating}
-            </Text>
-
-          </View>
-
-
-          <Text style={styles.price}>
-
-            {
-              item.discountPrice
-                ? item.discountPrice.toLocaleString("vi-VN")
-                : item.price.toLocaleString("vi-VN")
-            }
-
-            đ
-
-          </Text>
-
-
-        </View>
-
-
       </View>
 
+      <Text style={styles.price}>
+        {(item.discountPrice || item.price).toLocaleString(
+          "vi-VN"
+        )}{" "}
+        đ
+      </Text>
     </TouchableOpacity>
   );
 }
 
-
-
 const styles = StyleSheet.create({
-
   card: {
     width: (width - 55) / 2,
     backgroundColor: "#fff",
     borderRadius: 20,
     overflow: "hidden",
   },
-
 
   imageContainer: {
     width: "100%",
@@ -127,14 +93,12 @@ const styles = StyleSheet.create({
     position: "relative",
   },
 
-
   image: {
     width: "100%",
     height: "100%",
   },
 
-
-  favorite: {
+  favoriteButton: {
     position: "absolute",
     top: 12,
     right: 12,
@@ -146,50 +110,29 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-
-  info: {
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-
-
   category: {
     fontSize: 12,
     color: "#999",
     fontWeight: "600",
     textTransform: "uppercase",
+    marginTop: 10,
+    marginHorizontal: 12,
   },
-
-
-  brand: {
-    marginTop: 4,
-    fontSize: 12,
-    color: "#666",
-    fontWeight: "500",
-  },
-
 
   name: {
     fontSize: 17,
     fontWeight: "700",
     color: "#222",
     marginTop: 4,
+    marginHorizontal: 12,
   },
-
-
-  bottomRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 10,
-  },
-
 
   ratingRow: {
     flexDirection: "row",
     alignItems: "center",
+    marginTop: 8,
+    marginHorizontal: 12,
   },
-
 
   rating: {
     marginLeft: 4,
@@ -198,11 +141,12 @@ const styles = StyleSheet.create({
     color: "#555",
   },
 
-
   price: {
     color: "#1157FF",
     fontSize: 16,
     fontWeight: "700",
+    marginTop: 8,
+    marginBottom: 12,
+    marginHorizontal: 12,
   },
-
 });
