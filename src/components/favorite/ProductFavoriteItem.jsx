@@ -1,143 +1,145 @@
 import React from "react";
 import {
-    View,
-    Text,
-    StyleSheet,
-    Image,
-    TouchableOpacity,
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
 } from "react-native";
-import { Ionicons, Feather } from "@expo/vector-icons";
+
+import { Ionicons } from "@expo/vector-icons";
 
 import COLORS from "../../constants/colors";
 import FONTS from "../../constants/fonts";
 
 const ProductFavoriteItem = ({ item, onRemove }) => {
-    return (
-        <View style={styles.card}>
-            <Image
-                source={{ uri: item.image }}
-                style={styles.image}
+  return (
+    <View style={styles.card}>
+      {/* ẢNH SẢN PHẨM */}
+      <Image
+        source={{ uri: item.image }}
+        style={styles.image}
+      />
+
+      {/* NÚT BỎ YÊU THÍCH */}
+      <TouchableOpacity
+        style={styles.favoriteButton}
+        onPress={() => onRemove(item.id)}
+      >
+        <Ionicons
+          name="heart"
+          size={18}
+          color="#E53935"
+        />
+      </TouchableOpacity>
+
+      {/* THÔNG TIN SẢN PHẨM */}
+      <View style={styles.body}>
+        <Text style={styles.brand}>
+          {item.brand}
+        </Text>
+
+        <Text
+          numberOfLines={2}
+          style={styles.name}
+        >
+          {item.name}
+        </Text>
+
+        <View style={styles.bottom}>
+          {/* GIÁ */}
+          <Text style={styles.price}>
+            {item.price}
+          </Text>
+
+          {/* NÚT THÊM VÀO GIỎ */}
+          <TouchableOpacity style={styles.cartButton}>
+            <Ionicons
+              name="cart-outline"
+              size={18}
+              color={COLORS.white}
             />
-
-            <TouchableOpacity
-                style={styles.favoriteButton}
-                onPress={() => onRemove(item.id)}
-            >
-                <Ionicons
-                    name="heart"
-                    size={18}
-                    color="#E53935"
-                />
-            </TouchableOpacity>
-
-            <View style={styles.body}>
-                <Text style={styles.brand}>
-                    {item.brand}
-                </Text>
-
-                <Text
-                    numberOfLines={2}
-                    style={styles.name}
-                >
-                    {item.name}
-                </Text>
-
-                <View style={styles.bottom}>
-                    <Text style={styles.price}>
-                        {item.price}
-                    </Text>
-
-                    <TouchableOpacity style={styles.cartButton}>
-                        <Feather
-                            name="shopping-cart"
-                            size={16}
-                            color={COLORS.white}
-                        />
-                    </TouchableOpacity>
-                </View>
-            </View>
+          </TouchableOpacity>
         </View>
-    );
+      </View>
+    </View>
+  );
 };
 
 export default ProductFavoriteItem;
 
 const styles = StyleSheet.create({
-    card: {
-        width: "48%",
-        backgroundColor: COLORS.white,
-        borderRadius: 14,
-        marginBottom: 18,
-        overflow: "hidden",
-        elevation: 2,
-    },
+  card: {
+    width: "48%",
+    backgroundColor: COLORS.white,
+    borderRadius: 14,
+    marginBottom: 18,
+    overflow: "hidden",
+    elevation: 2,
+  },
 
-    image: {
-        width: "100%",
-        height: 140,
-        resizeMode: "cover",
-    },
+  image: {
+    width: "100%",
+    height: 140,
+    resizeMode: "cover",
+  },
 
-    favoriteButton: {
-        position: "absolute",
-        top: 10,
-        right: 10,
+  favoriteButton: {
+    position: "absolute",
+    top: 10,
+    right: 10,
 
-        width: 34,
-        height: 34,
+    width: 34,
+    height: 34,
 
-        borderRadius: 17,
+    borderRadius: 17,
 
-        backgroundColor: COLORS.white,
+    backgroundColor: COLORS.white,
 
-        justifyContent: "center",
-        alignItems: "center",
-    },
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-    body: {
-        padding: 12,
-    },
+  body: {
+    padding: 12,
+  },
 
-    brand: {
-        // fontSize: 12,
-        // color: COLORS.gray,
-        // fontFamily: FONTS.medium,
-        // fontWeight: "600",
-        // textTransform: "uppercase",
-        fontSize: 12,
-        color: "#999",
-        fontWeight: "600",
-        textTransform: "uppercase",
-    },
+  brand: {
+    fontSize: 12,
+    color: "#999",
+    fontWeight: "600",
+    textTransform: "uppercase",
+  },
 
-    name: {
-        fontSize: 20,
-        color: COLORS.black,
-        fontFamily: FONTS.bold,
-        fontWeight: "700",
-        marginTop: 6,
-        minHeight: 56,
-    },
+  name: {
+    fontSize: 20,
+    color: COLORS.black,
+    fontFamily: FONTS.bold,
+    fontWeight: "700",
+    marginTop: 6,
+    minHeight: 56,
+  },
 
-    bottom: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-    },
+  bottom: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginTop: 8,
+  },
 
-    price: {
-        color: COLORS.primary,
-        fontSize: 18,
-        fontFamily: FONTS.bold,
-        fontWeight: "700",
-    },
+  price: {
+    color: COLORS.primary,
+    fontSize: 18,
+    fontFamily: FONTS.bold,
+    fontWeight: "700",
+  },
 
-    cartButton: {
-        width: 34,
-        height: 34,
-        borderRadius: 8,
-        backgroundColor: COLORS.primary,
-        justifyContent: "center",
-        alignItems: "center",
-    },
+  cartButton: {
+    width: 34,
+    height: 34,
+    borderRadius: 8,
+    backgroundColor: COLORS.primary,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 });

@@ -11,13 +11,17 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Alert } from "react-native";
 
 import COLORS from "../../constants/colors";
 import useProductDetailViewModel from "../../viewmodels/useProductDetailViewModel";
 import RelatedProductSection from "../Product/RelatedProductSection";
+import { useCart } from "../../context/CartContext";
 
 export default function ProductDetailScreen({ route, navigation }) {
   const { productId } = route.params;
+
+  const { addToCart } = useCart();
 
   const {
     product,
@@ -54,6 +58,20 @@ export default function ProductDetailScreen({ route, navigation }) {
       </SafeAreaView>
     );
   }
+
+  const handleAddToCart = () => {
+    if (!selectedVariant) {
+      Alert.alert("Thông báo", "Vui lòng chọn màu sắc và kích thước sản phẩm");
+
+      return;
+    }
+
+    addToCart(product, selectedVariant);
+
+    console.log("Đã thêm vào giỏ hàng:", product.name, selectedVariant);
+
+    Alert.alert("Thành công", "Đã thêm sản phẩm vào giỏ hàng");
+  };
 
   // =========================
   // ẢNH HIỂN THỊ
@@ -319,9 +337,7 @@ export default function ProductDetailScreen({ route, navigation }) {
             !selectedVariant && styles.disabledOutlineButton,
           ]}
           disabled={!selectedVariant}
-          onPress={() => {
-            console.log("Thêm vào giỏ hàng:", selectedVariant);
-          }}
+          onPress={handleAddToCart}
         >
           <Ionicons
             name="cart-outline"

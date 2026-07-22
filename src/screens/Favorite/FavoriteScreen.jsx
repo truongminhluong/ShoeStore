@@ -8,8 +8,7 @@ import {
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Feather, Ionicons } from "@expo/vector-icons";
-
+import { Ionicons } from "@expo/vector-icons";
 import COLORS from "../../constants/colors";
 import FONTS from "../../constants/fonts";
 
@@ -28,52 +27,30 @@ const FavoriteScreen = () => {
     <SafeAreaView style={styles.safeArea}>
       <Header />
       <View style={styles.container}>
-
         <View style={styles.header}>
           <View style={styles.titleContainer}>
-            <Text style={styles.title}>
-              Sản phẩm yêu thích
-            </Text>
+            <Text style={styles.title}>Sản phẩm yêu thích</Text>
           </View>
 
           <View style={styles.right}>
             <View style={styles.count}>
-              <Text style={styles.countText}>
-                {products.length}
-              </Text>
+              <Text style={styles.countText}>{products.length}</Text>
             </View>
 
             <TouchableOpacity style={styles.iconButton}>
-              <Ionicons
-                name="options"
-                size={18}
-                color={COLORS.gray}
-              />
+              <Ionicons name="options" size={18} color={COLORS.gray} />
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.iconButton}>
-              <Feather
-                name="shuffle"
-                size={17}
-                color={COLORS.gray}
-              />
+              <Ionicons name="shuffle-outline" size={18} color={COLORS.gray} />
             </TouchableOpacity>
           </View>
         </View>
 
-        <TouchableOpacity
-          style={styles.clear}
-          onPress={() => setProducts([])}
-        >
-          <Ionicons
-            name="trash-outline"
-            size={17}
-            color="#EF4444"
-          />
+        <TouchableOpacity style={styles.clear} onPress={() => setProducts([])}>
+          <Ionicons name="trash-outline" size={17} color="#EF4444" />
 
-          <Text style={styles.clearText}>
-            Xóa tất cả
-          </Text>
+          <Text style={styles.clearText}>Xóa tất cả</Text>
         </TouchableOpacity>
 
         <FlatList
@@ -85,10 +62,7 @@ const FavoriteScreen = () => {
           }}
           showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
-            <ProductFavoriteItem
-              item={item}
-              onRemove={removeItem}
-            />
+            <ProductFavoriteItem item={item} onRemove={removeItem} />
           )}
         />
       </View>
@@ -113,7 +87,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 10
+    marginBottom: 10,
   },
 
   titleContainer: {

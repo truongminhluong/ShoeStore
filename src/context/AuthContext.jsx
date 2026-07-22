@@ -35,6 +35,8 @@ export default function AuthProvider({ children }) {
   };
 
   const login = async (token, user) => {
+    console.log("User đăng nhập:", user);
+
     await AsyncStorage.setItem(
       "token",
       token
