@@ -25,19 +25,26 @@ export default function useProductDetailViewModel(productId) {
 
       const response = await getProductDetail(productId);
 
-      setProduct(response.product);
-      setVariants(response.variants || []);
+      const fetchedProduct = response?.product || response;
+      const fetchedVariants = Array.isArray(response?.variants)
+        ? response.variants
+        : Array.isArray(response?.product?.variants)
+          ? response.product.variants
+          : [];
+
+      setProduct(fetchedProduct);
+      setVariants(fetchedVariants);
 
     } catch (error) {
       console.log(
         "Lỗi lấy chi tiết sản phẩm:",
         error.response?.data?.message ||
-          error.message
+        error.message
       );
 
       setError(
         error.response?.data?.message ||
-          "Không thể tải thông tin sản phẩm"
+        "Không thể tải thông tin sản phẩm"
       );
     } finally {
       setLoading(false);
@@ -103,7 +110,7 @@ export default function useProductDetailViewModel(productId) {
     return variants.some(
       (variant) =>
         variant.colorCode ===
-          selectedColor.colorCode &&
+        selectedColor.colorCode &&
         variant.size === size &&
         variant.stock > 0
     );
@@ -121,7 +128,7 @@ export default function useProductDetailViewModel(productId) {
     return variants.find(
       (variant) =>
         variant.colorCode ===
-          selectedColor.colorCode &&
+        selectedColor.colorCode &&
         variant.size === selectedSize
     );
   }, [
@@ -144,7 +151,7 @@ export default function useProductDetailViewModel(productId) {
       !variants.some(
         (variant) =>
           variant.colorCode ===
-            color.colorCode &&
+          color.colorCode &&
           variant.size === selectedSize &&
           variant.stock > 0
       )

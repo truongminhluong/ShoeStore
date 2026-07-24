@@ -9,7 +9,9 @@ import {
 import ProductCard from "./ProductCard";
 import useNewestProductsViewModel from "../../viewmodels/useNewestProductsViewModel";
 
-export default function ProductSection() {
+export default function ProductSection(
+  { favoriteIds, onToggleFavorite }
+) {
   const { products, loading } = useNewestProductsViewModel();
 
   if (loading) {
@@ -31,7 +33,12 @@ export default function ProductSection() {
         horizontal
         data={products}
         keyExtractor={(item) => item._id}
-        renderItem={({ item }) => <ProductCard item={item} />}
+        renderItem={({ item }) =>
+          <ProductCard
+            item={item}
+            favoriteIds={favoriteIds}
+            onToggleFavorite={onToggleFavorite}
+          />}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
         ItemSeparatorComponent={() => <View style={{ width: 15 }} />}

@@ -6,7 +6,6 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
-
 import { Ionicons } from "@expo/vector-icons";
 
 import COLORS from "../../constants/colors";
@@ -15,16 +14,14 @@ import FONTS from "../../constants/fonts";
 const ProductFavoriteItem = ({ item, onRemove }) => {
   return (
     <View style={styles.card}>
-      {/* ẢNH SẢN PHẨM */}
       <Image
         source={{ uri: item.image }}
         style={styles.image}
       />
 
-      {/* NÚT BỎ YÊU THÍCH */}
       <TouchableOpacity
         style={styles.favoriteButton}
-        onPress={() => onRemove(item.id)}
+        onPress={() => onRemove(item._id)}
       >
         <Ionicons
           name="heart"
@@ -33,11 +30,12 @@ const ProductFavoriteItem = ({ item, onRemove }) => {
         />
       </TouchableOpacity>
 
-      {/* THÔNG TIN SẢN PHẨM */}
       <View style={styles.body}>
-        <Text style={styles.brand}>
-          {item.brand}
-        </Text>
+        <View style={styles.brandRow}>
+          <Text style={styles.brandName}>{item?.brand?.name || "Brand"}</Text>
+
+          <Text style={styles.categoryName}>{item?.category?.name || "Category"}</Text>
+        </View>
 
         <Text
           numberOfLines={2}
@@ -45,11 +43,24 @@ const ProductFavoriteItem = ({ item, onRemove }) => {
         >
           {item.name}
         </Text>
+        <View style={styles.ratingRow}>
+          <Ionicons
+            name="star"
+            size={15}
+            color="#FFB800"
+          />
+
+          <Text style={styles.rating}>
+            {item?.rating || 0}
+          </Text>
+        </View>
 
         <View style={styles.bottom}>
-          {/* GIÁ */}
           <Text style={styles.price}>
-            {item.price}
+            {(item?.discountPrice > 0
+              ? item.discountPrice
+              : item?.price || 0
+            ).toLocaleString("vi-VN")} đ
           </Text>
 
           {/* NÚT THÊM VÀO GIỎ */}
@@ -104,28 +115,57 @@ const styles = StyleSheet.create({
     padding: 12,
   },
 
-  brand: {
-    fontSize: 12,
-    color: "#999",
-    fontWeight: "600",
-    textTransform: "uppercase",
+  brandRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
   },
 
+  brandName: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#999",
+  },
+
+  categoryName: {
+    fontSize: 13,
+    color: "#999",
+  },
+
+
+  // brand: {
+  //   fontSize: 12,
+  //   color: "#999",
+  //   fontWeight: "600",
+  //   textTransform: "uppercase",
+  // },
+
   name: {
-    fontSize: 20,
+    fontSize: 18,
     color: COLORS.black,
     fontFamily: FONTS.bold,
     fontWeight: "700",
     marginTop: 6,
-    minHeight: 56,
+    minHeight: 35,
   },
 
   bottom: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 8,
   },
+  ratingRow: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+
+  rating: {
+    marginLeft: 4,
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#555",
+  },
+
 
   price: {
     color: COLORS.primary,

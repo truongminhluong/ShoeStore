@@ -12,10 +12,24 @@ import { useNavigation } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
 
-export default function ProductCard({ item }) {
+export default function ProductCard({ item, favoriteIds, onToggleFavorite }) {
   const navigation = useNavigation();
+  //  
+  const isFavorite = Array.isArray(favoriteIds) && favoriteIds.includes(item?._id);
+
+  const handleToggleFavorite = () => {
+    if (typeof onToggleFavorite !== "function") {
+      return;
+    }
+
+    onToggleFavorite(item?._id);
+  };
 
   const handlePress = () => {
+    if (!item?._id) {
+      return;
+    }
+
     navigation.navigate("ProductDetail", {
       productId: item._id,
     });
@@ -29,29 +43,38 @@ export default function ProductCard({ item }) {
     >
       <View style={styles.imageContainer}>
         <Image
-          source={{ uri: item.image }}
+          source={{ uri: item?.image || "" }}
           style={styles.image}
           resizeMode="cover"
         />
 
-        <TouchableOpacity style={styles.favoriteButton}>
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={handleToggleFavorite}
+        >
           <Ionicons
-            name="heart-outline"
-            size={22}
-            color="#222"
+            name={isFavorite ? "heart" : "heart-outline"}
+            size={25}
+            color={isFavorite ? "#E53935" : "#666"}
           />
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.category}>
-        {item.category?.name}
-      </Text>
+      {/* <Text style={styles.category}>
+        {item?.category?.name || "Category"}
+      </Text> */}
+
+      <View style={styles.brandRow}>
+        <Text style={styles.brandName}>{item?.brand?.name || "Brand"}</Text>
+
+        <Text style={styles.categoryName}>{item?.category?.name || "Category"}</Text>
+      </View>
 
       <Text
         style={styles.name}
         numberOfLines={2}
       >
-        {item.name}
+        {item?.name || "Sản phẩm"}
       </Text>
 
       <View style={styles.ratingRow}>
@@ -62,12 +85,12 @@ export default function ProductCard({ item }) {
         />
 
         <Text style={styles.rating}>
-          {item.rating}
+          {item?.rating || 0}
         </Text>
       </View>
 
       <Text style={styles.price}>
-        {(item.discountPrice || item.price).toLocaleString(
+        {((item?.discountPrice > 0 ? item?.discountPrice : item?.price) || 0).toLocaleString(
           "vi-VN"
         )}{" "}
         đ
@@ -109,15 +132,35 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-
-  category: {
-    fontSize: 12,
-    color: "#999",
-    fontWeight: "600",
-    textTransform: "uppercase",
-    marginTop: 10,
+  brandRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    marginTop: 4,
     marginHorizontal: 12,
   },
+
+  brandName: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#999",
+  },
+
+  categoryName: {
+    fontSize: 13,
+    color: "#999",
+  },
+
+
+  //
+  // category: {
+  //   fontSize: 12,
+
+  //   fontWeight: "600",
+  //   textTransform: "uppercase",
+  //   marginTop: 10,
+  //   marginHorizontal: 12,
+  // },
 
   name: {
     fontSize: 17,

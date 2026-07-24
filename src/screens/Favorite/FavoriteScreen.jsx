@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   FlatList,
+  ActivityIndicator,
+  Alert,
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -12,21 +14,106 @@ import { Ionicons } from "@expo/vector-icons";
 import COLORS from "../../constants/colors";
 import FONTS from "../../constants/fonts";
 
-import ProductFavoriteItem from "../../components/favorite/ProductFavoriteItem";
 import Header from "../../components/home/Header";
-import favoriteData from "../../data/favoriteData";
+import ProductFavoriteItem from "../../components/favorite/ProductFavoriteItem";
+import { useFavorite } from "../../context/FavoriteContext";
+
+const normalizeFavorites = (payload) => {
+  if (Array.isArray(payload)) {
+    return payload;
+  }
+
+  if (Array.isArray(payload?.data)) {
+    return payload.data;
+  }
+
+  if (Array.isArray(payload?.data?.products)) {
+    return payload.data.products;
+  }
+
+  if (Array.isArray(payload?.products)) {
+    return payload.products;
+  }
+
+  if (Array.isArray(payload?.favorites)) {
+    return payload.favorites;
+  }
+
+  return [];
+};
 
 const FavoriteScreen = () => {
-  const [products, setProducts] = useState(favoriteData);
+
+  const [deleting, setDeleting] = useState(false);
+  const {
+    favorites,
+    loading,
+    fetchFavorites,
+    removeFromFavorite,
+    clearAllFavorites,
+  } = useFavorite();
+  // useEffect(() => {
+  //   fetchFavorites_();
+  // }, []);
+
+  // const fetchFavorites_ = async () => {
+  //   try {
+  //     setLoading(true);
+
+  //     await fetchFavorites();
+
+  //   } catch (error) {
+  //     console.log(error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   const removeItem = (id) => {
-    setProducts(products.filter((item) => item.id !== id));
+    Alert.alert(
+      "Xóa sản phẩm",
+      "Bạn có chắc muốn xóa sản phẩm khỏi danh sách yêu thích?",
+      [
+        {
+          text: "Hủy",
+          style: "cancel",
+        },
+        {
+          text: "Xóa",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setDeleting(true);
+
+              await removeFromFavorite(id);
+            } catch (error) {
+              console.log(error.response?.data || error.message);
+            } finally {
+              setDeleting(false);
+            }
+          },
+        },
+      ]
+    );
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.loading}>
+        <ActivityIndicator
+          size="large"
+          color={COLORS.primary}
+        />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <Header />
+
       <View style={styles.container}>
+
         <View style={styles.header}>
           <View style={styles.titleContainer}>
             <Text style={styles.title}>Sản phẩm yêu thích</Text>
@@ -34,7 +121,9 @@ const FavoriteScreen = () => {
 
           <View style={styles.right}>
             <View style={styles.count}>
-              <Text style={styles.countText}>{products.length}</Text>
+              <Text style={styles.countText}>
+                {favorites.length}
+              </Text>
             </View>
 
             <TouchableOpacity style={styles.iconButton}>
@@ -42,25 +131,63 @@ const FavoriteScreen = () => {
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.iconButton}>
-              <Ionicons name="shuffle-outline" size={18} color={COLORS.gray} />
+              <Ionicons
+                name="shuffle-outline"
+                size={17}
+                color={COLORS.gray}
+              />
             </TouchableOpacity>
           </View>
         </View>
 
-        <TouchableOpacity style={styles.clear} onPress={() => setProducts([])}>
-          <Ionicons name="trash-outline" size={17} color="#EF4444" />
+        {/* Xóa tất cả */}
+
+        <TouchableOpacity
+          style={styles.clear}
+          onPress={() => {
+            Alert.alert(
+              "Xóa tất cả",
+              "Bạn có chắc muốn xóa toàn bộ sản phẩm yêu thích?",
+              [
+                {
+                  text: "Hủy",
+                  style: "cancel",
+                },
+                {
+                  text: "Xóa",
+                  style: "destructive",
+                  onPress: clearAllFavorites,
+                },
+              ]
+            );
+          }}
+        >
+          <Ionicons
+            name="trash-outline"
+            size={17}
+            color="#EF4444"
+          />
 
           <Text style={styles.clearText}>Xóa tất cả</Text>
         </TouchableOpacity>
 
+        {/* Danh sách */}
+        {deleting && (
+          <ActivityIndicator
+            size="small"
+            color={COLORS.primary}
+            style={{ marginBottom: 10 }}
+          />
+        )}
+
         <FlatList
-          data={products}
-          keyExtractor={(item) => item.id}
+          data={favorites}
+          keyExtractor={(item, index) => item?._id || item?.id || `favorite-${index}`}
           numColumns={2}
+          showsVerticalScrollIndicator={false}
           columnWrapperStyle={{
             justifyContent: "space-between",
           }}
-          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => (
             <ProductFavoriteItem item={item} onRemove={removeItem} />
           )}

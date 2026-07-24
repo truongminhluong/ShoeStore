@@ -19,7 +19,7 @@ import RelatedProductSection from "../Product/RelatedProductSection";
 import { useCart } from "../../context/CartContext";
 
 export default function ProductDetailScreen({ route, navigation }) {
-  const { productId } = route.params;
+  const productId = route?.params?.productId;
 
   const { addToCart } = useCart();
 
@@ -78,14 +78,16 @@ export default function ProductDetailScreen({ route, navigation }) {
   // =========================
 
   const displayImage =
-    selectedVariant?.image || selectedColor?.image || product.image;
+    selectedVariant?.image || selectedColor?.image || product?.image || "";
 
   // =========================
   // GIÁ HIỂN THỊ
   // =========================
 
   const displayPrice =
-    product.discountPrice > 0 ? product.discountPrice : product.price;
+    Number(product?.discountPrice) > 0
+      ? Number(product?.discountPrice)
+      : Number(product?.price) || 0;
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -123,21 +125,21 @@ export default function ProductDetailScreen({ route, navigation }) {
         <View style={styles.infoContainer}>
           {/* THƯƠNG HIỆU + DANH MỤC */}
           <View style={styles.brandRow}>
-            <Text style={styles.brandName}>{product.brand?.name}</Text>
+            <Text style={styles.brandName}>{product?.brand?.name || "Brand"}</Text>
 
-            <Text style={styles.categoryName}>{product.category?.name}</Text>
+            <Text style={styles.categoryName}>{product?.category?.name || "Category"}</Text>
           </View>
 
           {/* TÊN */}
-          <Text style={styles.productName}>{product.name}</Text>
+          <Text style={styles.productName}>{product?.name || "Sản phẩm"}</Text>
 
           {/* ĐÁNH GIÁ */}
           <View style={styles.ratingRow}>
             <Ionicons name="star" size={18} color="#F59E0B" />
 
-            <Text style={styles.ratingText}>{product.rating}</Text>
+            <Text style={styles.ratingText}>{product?.rating || 0}</Text>
 
-            <Text style={styles.soldText}>| Đã bán {product.sold}</Text>
+            <Text style={styles.soldText}>| Đã bán {product?.sold || 0}</Text>
           </View>
 
           {/* GIÁ */}
@@ -146,9 +148,9 @@ export default function ProductDetailScreen({ route, navigation }) {
               {displayPrice.toLocaleString("vi-VN")}đ
             </Text>
 
-            {product.discountPrice > 0 && (
+            {Number(product?.discountPrice) > 0 && (
               <Text style={styles.originalPrice}>
-                {product.price.toLocaleString("vi-VN")}đ
+                {Number(product?.price || 0).toLocaleString("vi-VN")}đ
               </Text>
             )}
           </View>
@@ -236,7 +238,7 @@ export default function ProductDetailScreen({ route, navigation }) {
           {/* MÔ TẢ */}
           <Text style={styles.sectionTitle}>Mô tả sản phẩm</Text>
 
-          <Text style={styles.description}>{product.description}</Text>
+          <Text style={styles.description}>{product?.description || "Mô tả đang được cập nhật."}</Text>
 
           {/* CHÍNH SÁCH */}
           <View style={styles.policyContainer}>
@@ -271,7 +273,7 @@ export default function ProductDetailScreen({ route, navigation }) {
           </View>
 
           <View style={styles.ratingSummary}>
-            <Text style={styles.bigRating}>{product.rating}</Text>
+            <Text style={styles.bigRating}>{product?.rating || 0}</Text>
 
             <View>
               <View style={styles.starsRow}>
@@ -317,7 +319,7 @@ export default function ProductDetailScreen({ route, navigation }) {
 
         {/* SẢN PHẨM KHÁC */}
         <View style={styles.relatedSection}>
-          <RelatedProductSection currentProductId={product._id} />
+          <RelatedProductSection currentProductId={product?._id} />
         </View>
       </ScrollView>
 

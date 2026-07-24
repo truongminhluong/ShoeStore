@@ -13,11 +13,12 @@ export default function useRelatedProductsViewModel(
         setLoading(true);
 
         const data = await getProducts();
+        const safeProducts = Array.isArray(data) ? data : [];
 
-        const relatedProducts = data
+        const relatedProducts = safeProducts
           .filter(
             (product) =>
-              product._id !== currentProductId
+              product?._id !== currentProductId
           )
           .slice(0, 6);
 
