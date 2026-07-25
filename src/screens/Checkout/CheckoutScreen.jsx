@@ -17,6 +17,8 @@ import { Alert } from "react-native";
 
 import { useAuth } from "../../context/AuthContext";
 import { createOrderApi } from "../../services/orderService";
+import { useEffect, useState } from "react";
+import { getAddressesApi } from "../../services/addressService";
 
 export default function CheckoutScreen({ navigation }) {
   const insets = useSafeAreaInsets();
@@ -24,6 +26,32 @@ export default function CheckoutScreen({ navigation }) {
   const { cartItems, clearCart } = useCart();
 
   const { token } = useAuth();
+
+  const [selectedAddress, setSelectedAddress] = useState(null);
+
+  useEffect(() => {
+    const loadDefaultAddress = async () => {
+      try {
+        if (!token) return;
+
+        const response = await getAddressesApi(token);
+
+        const addresses = response.data || [];
+
+        const defaultAddress = addresses.find(
+          (address) => address.isDefault === true,
+        );
+
+        if (defaultAddress) {
+          setSelectedAddress(defaultAddress);
+        }
+      } catch (error) {
+        console.log("Lỗi lấy địa chỉ:", error.response?.data || error.message);
+      }
+    };
+
+    loadDefaultAddress();
+  }, [token]);
 
   // =========================
   // TÍNH TIỀN
@@ -65,6 +93,12 @@ export default function CheckoutScreen({ navigation }) {
         return;
       }
 
+      if (!selectedAddress) {
+        Alert.alert("Thông báo", "Vui lòng thêm địa chỉ nhận hàng");
+
+        return;
+      }
+
       // =========================
       // CHUYỂN DỮ LIỆU GIỎ HÀNG
       // SANG FORMAT BACKEND
@@ -84,9 +118,9 @@ export default function CheckoutScreen({ navigation }) {
         items: orderItems,
 
         shippingAddress: {
-          fullName: "Nguyễn Văn A",
-          phone: "0981234567",
-          address: "123 Đường Lê Lợi, Quận 1, TP. Hồ Chí Minh",
+          fullName: selectedAddress.fullName,
+          phone: selectedAddress.phone,
+          address: `${selectedAddress.addressDetail}, ${selectedAddress.ward}, ${selectedAddress.district}, ${selectedAddress.province}`,
         },
 
         paymentMethod: "cod",
@@ -216,32 +250,93 @@ export default function CheckoutScreen({ navigation }) {
 
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Địa chỉ nhận hàng</Text>
+            <View style={styles.sectionTitleContainer}>
+              <Ionicons
+                name="location-outline"
+                size={20}
+                color={COLORS.primary}
+              />
 
-            <TouchableOpacity>
-              <Text style={styles.changeText}>Thay đổi</Text>
+              <Text style={styles.sectionTitle}>Địa chỉ nhận hàng</Text>
+            </View>
+
+            <TouchableOpacity
+              onPress={() => {
+                navigation.navigate("AddAddress");
+              }}
+            >
+              <Text style={styles.changeText}>
+                {selectedAddress ? "Thay đổi" : "Thêm địa chỉ"}
+              </Text>
             </TouchableOpacity>
           </View>
 
-          <View style={styles.addressBox}>
-            <View style={styles.addressIcon}>
-              <Ionicons
-                name="location-outline"
-                size={24}
-                color={COLORS.primary}
-              />
-            </View>
+          {selectedAddress ? (
+            // =========================
+            // ĐÃ CÓ ĐỊA CHỈ
+            // =========================
+            <TouchableOpacity
+              style={styles.addressBox}
+              activeOpacity={0.8}
+              onPress={() => {
+                navigation.navigate("AddAddress");
+              }}
+            >
+              <View style={styles.addressIconContainer}>
+                <Ionicons name="location" size={22} color={COLORS.primary} />
+              </View>
 
-            <View style={styles.addressInfo}>
-              <Text style={styles.addressName}>Nguyễn Văn A</Text>
+              <View style={styles.addressInfo}>
+                <View style={styles.addressTopRow}>
+                  <Text style={styles.addressName}>
+                    {selectedAddress.fullName}
+                  </Text>
 
-              <Text style={styles.addressPhone}>(+84) 098 123 4567</Text>
+                  <Text style={styles.defaultAddress}>Mặc định</Text>
+                </View>
 
-              <Text style={styles.addressText}>
-                123 Đường Lê Lợi, Phường Bến Thành, Quận 1, TP. Hồ Chí Minh
-              </Text>
-            </View>
-          </View>
+                <Text style={styles.addressPhone}>{selectedAddress.phone}</Text>
+
+                <Text style={styles.addressText}>
+                  {selectedAddress.addressDetail}, {selectedAddress.ward},{" "}
+                  {selectedAddress.district}, {selectedAddress.province}
+                </Text>
+              </View>
+
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+          ) : (
+            // =========================
+            // CHƯA CÓ ĐỊA CHỈ
+            // =========================
+            <TouchableOpacity
+              style={styles.emptyAddressBox}
+              activeOpacity={0.8}
+              onPress={() => {
+                navigation.navigate("AddAddress");
+              }}
+            >
+              <View style={styles.emptyAddressIcon}>
+                <Ionicons
+                  name="location-outline"
+                  size={24}
+                  color={COLORS.primary}
+                />
+              </View>
+
+              <View style={styles.emptyAddressInfo}>
+                <Text style={styles.emptyAddressTitle}>
+                  Chưa có địa chỉ nhận hàng
+                </Text>
+
+                <Text style={styles.addAddressText}>
+                  Nhấn để thêm địa chỉ giao hàng
+                </Text>
+              </View>
+
+              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+            </TouchableOpacity>
+          )}
         </View>
 
         {/* =========================
@@ -582,19 +677,62 @@ const styles = StyleSheet.create({
   // ĐỊA CHỈ
   // =========================
 
-  addressBox: {
+  sectionTitleContainer: {
     flexDirection: "row",
-    backgroundColor: "#F3F4FF",
-    borderRadius: 10,
-    padding: 14,
+    alignItems: "center",
   },
 
-  addressIcon: {
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#1F2937",
+    marginLeft: 8,
+  },
+
+  changeText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: COLORS.primary,
+  },
+
+  // =========================
+  // ĐỊA CHỈ ĐÃ CÓ
+  // =========================
+
+  addressBox: {
+    flexDirection: "row",
+    alignItems: "center",
+
+    backgroundColor: "#FFFFFF",
+
+    borderRadius: 16,
+
+    padding: 16,
+
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+
+  addressIconContainer: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+
+    backgroundColor: "#E4E7FF",
+
+    justifyContent: "center",
+    alignItems: "center",
+
     marginRight: 12,
   },
 
   addressInfo: {
     flex: 1,
+  },
+
+  addressTopRow: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 
   addressName: {
@@ -603,10 +741,26 @@ const styles = StyleSheet.create({
     color: "#1F2937",
   },
 
+  defaultAddress: {
+    fontSize: 11,
+    fontWeight: "600",
+
+    color: COLORS.primary,
+
+    backgroundColor: "#E4E7FF",
+
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+
+    borderRadius: 6,
+
+    marginLeft: 8,
+  },
+
   addressPhone: {
     fontSize: 13,
     color: "#6B7280",
-    marginTop: 4,
+    marginTop: 5,
   },
 
   addressText: {
@@ -614,6 +768,54 @@ const styles = StyleSheet.create({
     color: "#6B7280",
     lineHeight: 19,
     marginTop: 5,
+  },
+
+  // =========================
+  // CHƯA CÓ ĐỊA CHỈ
+  // =========================
+
+  emptyAddressBox: {
+    flexDirection: "row",
+    alignItems: "center",
+
+    backgroundColor: "#FFFFFF",
+
+    borderRadius: 16,
+
+    padding: 16,
+
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+  },
+
+  emptyAddressIcon: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+
+    backgroundColor: "#E4E7FF",
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    marginRight: 12,
+  },
+
+  emptyAddressInfo: {
+    flex: 1,
+  },
+
+  emptyAddressTitle: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#1F2937",
+  },
+
+  addAddressText: {
+    fontSize: 13,
+    color: COLORS.primary,
+    marginTop: 5,
+    fontWeight: "500",
   },
 
   // =========================
