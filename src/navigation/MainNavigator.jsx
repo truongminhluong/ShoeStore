@@ -7,6 +7,8 @@ import OrderSuccessScreen from "../screens/Order/OrderSuccessScreen";
 import OrderScreen from "../screens/Order/OrderScreen";
 import AddressScreen from "../screens/Address/AddressScreen";
 import AddAddressScreen from "../screens/Address/AddAddressScreen";
+import VnpayPaymentScreen from "../screens/Payment/VnpayPaymentScreen";
+import PaymentResultScreen from "../screens/Payment/PaymentResultScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -37,6 +39,17 @@ export default function MainNavigator() {
 
       {/* Màn hình thêm địa chỉ */}
       <Stack.Screen name="AddAddress" component={AddAddressScreen} />
+
+      <Stack.Screen
+        name="VnpayPayment"
+        component={VnpayPaymentScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+
+      {/* Màn hình kết quả thanh toán */}
+      <Stack.Screen name="PaymentResult" component={PaymentResultScreen} />
     </Stack.Navigator>
   );
 }

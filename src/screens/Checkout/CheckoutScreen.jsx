@@ -19,6 +19,7 @@ import { useAuth } from "../../context/AuthContext";
 import { createOrderApi } from "../../services/orderService";
 import { useEffect, useState } from "react";
 import { getAddressesApi } from "../../services/addressService";
+import { createVnpayPaymentApi } from "../../services/vnpayService";
 
 export default function CheckoutScreen({ navigation }) {
   const insets = useSafeAreaInsets();
@@ -28,6 +29,8 @@ export default function CheckoutScreen({ navigation }) {
   const { token } = useAuth();
 
   const [selectedAddress, setSelectedAddress] = useState(null);
+
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("cod");
 
   useEffect(() => {
     const loadDefaultAddress = async () => {
@@ -79,7 +82,6 @@ export default function CheckoutScreen({ navigation }) {
 
       if (cartItems.length === 0) {
         Alert.alert("Thông báo", "Giỏ hàng đang trống");
-
         return;
       }
 
@@ -89,19 +91,20 @@ export default function CheckoutScreen({ navigation }) {
 
       if (!token) {
         Alert.alert("Thông báo", "Vui lòng đăng nhập để đặt hàng");
-
-        return;
-      }
-
-      if (!selectedAddress) {
-        Alert.alert("Thông báo", "Vui lòng thêm địa chỉ nhận hàng");
-
         return;
       }
 
       // =========================
-      // CHUYỂN DỮ LIỆU GIỎ HÀNG
-      // SANG FORMAT BACKEND
+      // KIỂM TRA ĐỊA CHỈ
+      // =========================
+
+      if (!selectedAddress) {
+        Alert.alert("Thông báo", "Vui lòng thêm địa chỉ nhận hàng");
+        return;
+      }
+
+      // =========================
+      // TẠO DANH SÁCH SẢN PHẨM
       // =========================
 
       const orderItems = cartItems.map((item) => ({
@@ -123,39 +126,55 @@ export default function CheckoutScreen({ navigation }) {
           address: `${selectedAddress.addressDetail}, ${selectedAddress.ward}, ${selectedAddress.district}, ${selectedAddress.province}`,
         },
 
-        paymentMethod: "cod",
+        paymentMethod: selectedPaymentMethod,
       };
 
       console.log("Dữ liệu đặt hàng:", orderData);
 
       // =========================
-      // GỌI API TẠO ĐƠN HÀNG
+      // TẠO ĐƠN HÀNG
       // =========================
 
       const response = await createOrderApi(orderData, token);
 
-      console.log("Đặt hàng thành công:", response);
-
-      // =========================
-      // LẤY ĐƠN HÀNG VỪA TẠO
-      // =========================
+      console.log("Tạo đơn hàng thành công:", response);
 
       const order = response.data;
 
-      // =========================
-      // XÓA GIỎ HÀNG
-      // =========================
+      // =====================================================
+      // THANH TOÁN COD
+      // =====================================================
 
-      clearCart();
+      if (selectedPaymentMethod === "cod") {
+        clearCart();
 
-      // =========================
-      // CHUYỂN SANG MÀN HÌNH
-      // ĐẶT HÀNG THÀNH CÔNG
-      // =========================
+        navigation.replace("OrderSuccess", {
+          orderId: order._id,
+        });
 
-      navigation.replace("OrderSuccess", {
-        orderId: order._id,
-      });
+        return;
+      }
+
+      // =====================================================
+      // THANH TOÁN VNPAY
+      // =====================================================
+
+      if (selectedPaymentMethod === "vnpay") {
+        console.log("Đang tạo URL thanh toán VNPAY...");
+
+        const paymentResponse = await createVnpayPaymentApi(order._id, token);
+
+        console.log("URL thanh toán VNPAY:", paymentResponse);
+
+        const paymentUrl = paymentResponse.data.paymentUrl;
+
+        navigation.navigate("VnpayPayment", {
+          paymentUrl,
+          orderId: order._id,
+        });
+
+        return;
+      }
     } catch (error) {
       console.log("Lỗi đặt hàng:", error.response?.data || error.message);
 
@@ -346,10 +365,27 @@ export default function CheckoutScreen({ navigation }) {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Phương thức thanh toán</Text>
 
+          {/* COD */}
           <TouchableOpacity
-            style={[styles.paymentOption, styles.selectedPayment]}
+            style={[
+              styles.paymentOption,
+              selectedPaymentMethod === "cod" && styles.selectedPayment,
+            ]}
+            onPress={() => {
+              setSelectedPaymentMethod("cod");
+            }}
           >
-            <Ionicons name="radio-button-on" size={24} color={COLORS.primary} />
+            <Ionicons
+              name={
+                selectedPaymentMethod === "cod"
+                  ? "radio-button-on"
+                  : "radio-button-off"
+              }
+              size={24}
+              color={
+                selectedPaymentMethod === "cod" ? COLORS.primary : "#9CA3AF"
+              }
+            />
 
             <View style={styles.paymentInfo}>
               <Text style={styles.paymentName}>Thanh toán khi nhận hàng</Text>
@@ -360,33 +396,36 @@ export default function CheckoutScreen({ navigation }) {
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.paymentOption}>
-            <Ionicons name="radio-button-off" size={24} color="#9CA3AF" />
-
-            <View style={styles.paymentInfo}>
-              <Text style={styles.paymentName}>Ví điện tử MoMo</Text>
-
-              <Text style={styles.paymentDescription}>
-                Thanh toán nhanh qua ví điện tử
-              </Text>
-            </View>
-          </TouchableOpacity>
-
+          {/* VNPAY */}
           <TouchableOpacity
             style={[
               styles.paymentOption,
               {
                 marginBottom: 0,
               },
+              selectedPaymentMethod === "vnpay" && styles.selectedPayment,
             ]}
+            onPress={() => {
+              setSelectedPaymentMethod("vnpay");
+            }}
           >
-            <Ionicons name="radio-button-off" size={24} color="#9CA3AF" />
+            <Ionicons
+              name={
+                selectedPaymentMethod === "vnpay"
+                  ? "radio-button-on"
+                  : "radio-button-off"
+              }
+              size={24}
+              color={
+                selectedPaymentMethod === "vnpay" ? COLORS.primary : "#9CA3AF"
+              }
+            />
 
             <View style={styles.paymentInfo}>
-              <Text style={styles.paymentName}>Thẻ Visa / Mastercard</Text>
+              <Text style={styles.paymentName}>Thanh toán qua VNPAY</Text>
 
               <Text style={styles.paymentDescription}>
-                Thanh toán bằng thẻ quốc tế
+                Thanh toán online qua cổng thanh toán VNPAY
               </Text>
             </View>
           </TouchableOpacity>
