@@ -17,6 +17,7 @@ import COLORS from "../../constants/colors";
 import useProductDetailViewModel from "../../viewmodels/useProductDetailViewModel";
 import RelatedProductSection from "../Product/RelatedProductSection";
 import { useCart } from "../../context/CartContext";
+import ReviewSection from "../../components/product/ReviewSection";
 
 export default function ProductDetailScreen({ route, navigation }) {
   const productId = route?.params?.productId;
@@ -263,59 +264,7 @@ export default function ProductDetailScreen({ route, navigation }) {
         </View>
 
         {/* ĐÁNH GIÁ */}
-        <View style={styles.reviewSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Đánh giá sản phẩm</Text>
-
-            <TouchableOpacity>
-              <Text style={styles.viewAllText}>Xem tất cả</Text>
-            </TouchableOpacity>
-          </View>
-
-          <View style={styles.ratingSummary}>
-            <Text style={styles.bigRating}>{product?.rating || 0}</Text>
-
-            <View>
-              <View style={styles.starsRow}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Ionicons key={star} name="star" size={18} color="#F59E0B" />
-                ))}
-              </View>
-
-              <Text style={styles.reviewCount}>
-                Dựa trên đánh giá của khách hàng
-              </Text>
-            </View>
-          </View>
-
-          {/* REVIEW DEMO */}
-          <View style={styles.reviewCard}>
-            <View style={styles.reviewHeader}>
-              <View style={styles.avatar}>
-                <Text style={styles.avatarText}>A</Text>
-              </View>
-
-              <View>
-                <Text style={styles.reviewerName}>Nguyễn Văn A</Text>
-
-                <View style={styles.starsRow}>
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <Ionicons
-                      key={star}
-                      name="star"
-                      size={13}
-                      color="#F59E0B"
-                    />
-                  ))}
-                </View>
-              </View>
-            </View>
-
-            <Text style={styles.reviewText}>
-              Sản phẩm đẹp, đi rất êm chân và đúng size.
-            </Text>
-          </View>
-        </View>
+        <ReviewSection productId={product._id} />
 
         {/* SẢN PHẨM KHÁC */}
         <View style={styles.relatedSection}>

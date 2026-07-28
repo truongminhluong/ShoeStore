@@ -1,6 +1,9 @@
-import { useMemo, useState, useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+
 import { ScrollView, StyleSheet } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
+
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 
 import Header from "../../components/home/Header";
@@ -9,7 +12,9 @@ import BannerSlider from "../../components/home/BannerSlider";
 import BrandSection from "../../components/home/BrandSection";
 import ProductSection from "../../components/home/ProductSection";
 import PopularSection from "../../components/home/PopularSection";
-// import { getFavorites, addFavorite, removeFavorite } from "../../services/favoriteService";
+
+import useNotificationViewModel from "../../viewmodels/useNotificationViewModel";
+
 import { useFavorite } from "../../context/FavoriteContext";
 
 import COLORS from "../../constants/colors";
@@ -23,51 +28,47 @@ const normalizeText = (value) =>
     .replace(/[\u0300-\u036f]/g, "")
     .trim();
 
-export default function HomeScreen() {
+export default function HomeScreen({ navigation }) {
   const tabBarHeight = useBottomTabBarHeight();
+
+  // =========================
+  // THÔNG BÁO
+  // =========================
+
+  const { unreadCount, fetchUnreadCount } = useNotificationViewModel();
+
+  // =========================
+  // STATE
+  // =========================
+
   const [searchText, setSearchText] = useState("");
+
   const [selectedBrand, setSelectedBrand] = useState(null);
+
   const { favoriteIds, toggleFavorite } = useFavorite();
-  // const [favoriteIds, setFavoriteIds] = useState([]);
 
-  //
-  // useEffect(() => {
-  //   loadFavorites();
-  // }, []);
+  // =========================
+  // TỰ ĐỘNG KIỂM TRA THÔNG BÁO
+  // =========================
 
-  // const loadFavorites = async () => {
-  //   try {
-  //     const favorite = await getFavorites();
+  useEffect(() => {
+    // Gọi ngay khi HomeScreen được mở
+    fetchUnreadCount();
 
-  //     const ids = favorite.data.products.map((item) => item._id);
+    // Kiểm tra lại mỗi 5 giây
+    const interval = setInterval(() => {
+      fetchUnreadCount();
+    }, 5000);
 
-  //     setFavoriteIds(ids);
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
+    // Hủy interval khi rời màn hình
+    return () => {
+      clearInterval(interval);
+    };
+  }, [fetchUnreadCount]);
 
-  // const handleToggleFavorite = async (productId) => {
-  //   try {
-  //     const isFavorite = favoriteIds.includes(productId);
-
-  //     if (isFavorite) {
-  //       await removeFavorite(productId);
-
-  //       setFavoriteIds((prev) =>
-  //         prev.filter((id) => id !== productId)
-  //       );
-  //     } else {
-  //       await addFavorite(productId);
-
-  //       setFavoriteIds((prev) => [...prev, productId]);
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //   }
-  // };
-  //
-
+  // =========================
+  // LỌC SẢN PHẨM
+  // =========================
 
   const filteredProducts = useMemo(() => {
     const keyword = normalizeText(searchText);
@@ -87,14 +88,23 @@ export default function HomeScreen() {
     });
   }, [searchText, selectedBrand]);
 
+  // =========================
+  // CHỌN BRAND
+  // =========================
+
   const handleSelectBrand = (brand) => {
     setSelectedBrand((currentBrand) =>
       currentBrand?.id === brand.id ? null : brand,
     );
   };
 
+  // =========================
+  // XÓA BỘ LỌC
+  // =========================
+
   const clearFilters = () => {
     setSearchText("");
+
     setSelectedBrand(null);
   };
 
@@ -111,7 +121,11 @@ export default function HomeScreen() {
           },
         ]}
       >
-        <Header />
+        {/* HEADER */}
+
+        <Header navigation={navigation} unreadCount={unreadCount} />
+
+        {/* THANH TÌM KIẾM */}
 
         <SearchBar
           value={searchText}
@@ -121,12 +135,18 @@ export default function HomeScreen() {
           hasActiveFilters={Boolean(searchText.trim() || selectedBrand)}
         />
 
+        {/* BANNER */}
+
         <BannerSlider />
+
+        {/* BRAND */}
 
         <BrandSection
           selectedBrandId={selectedBrand?.id}
           onSelectBrand={handleSelectBrand}
         />
+
+        {/* SẢN PHẨM */}
 
         <ProductSection
           products={filteredProducts}
@@ -136,6 +156,8 @@ export default function HomeScreen() {
           favoriteIds={favoriteIds}
           onToggleFavorite={toggleFavorite}
         />
+
+        {/* SẢN PHẨM PHỔ BIẾN */}
 
         <PopularSection />
       </ScrollView>

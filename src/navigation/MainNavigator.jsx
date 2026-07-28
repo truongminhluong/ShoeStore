@@ -9,6 +9,9 @@ import AddressScreen from "../screens/Address/AddressScreen";
 import AddAddressScreen from "../screens/Address/AddAddressScreen";
 import VnpayPaymentScreen from "../screens/Payment/VnpayPaymentScreen";
 import PaymentResultScreen from "../screens/Payment/PaymentResultScreen";
+import NotificationScreen from "../screens/Notification/NotificationScreen";
+import CreateReviewScreen from "../screens/Review/CreateReviewScreen";
+import OrderDetailScreen from "../screens/Order/OrderDetailScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -50,6 +53,28 @@ export default function MainNavigator() {
 
       {/* Màn hình kết quả thanh toán */}
       <Stack.Screen name="PaymentResult" component={PaymentResultScreen} />
+
+      {/* Màn hình thông báo */}
+      <Stack.Screen name="Notifications" component={NotificationScreen} />
+
+      {/* Màn hình tạo đánh giá */}
+      <Stack.Screen
+        name="CreateReview"
+        component={CreateReviewScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+
+      {/* Màn hình chi tiết đơn hàng */}
+      <Stack.Screen
+        name="OrderDetail"
+        component={OrderDetailScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      
     </Stack.Navigator>
   );
 }

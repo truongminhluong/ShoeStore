@@ -7,6 +7,9 @@ import {
   ActivityIndicator,
 } from "react-native";
 
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
+
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -18,6 +21,16 @@ export default function OrderScreen({ navigation }) {
   const insets = useSafeAreaInsets();
 
   const { orders, loading, error, fetchOrders } = useOrderViewModel();
+
+  // =========================
+  // TẢI LẠI ĐƠN HÀNG KHI QUAY LẠI MÀN HÌNH
+  // =========================
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchOrders();
+    }, [fetchOrders]),
+  );
 
   // =========================
   // FORMAT TIỀN

@@ -7,6 +7,9 @@ import {
   StyleSheet,
 } from "react-native";
 
+import { useFocusEffect } from "@react-navigation/native";
+import { useCallback } from "react";
+
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -32,29 +35,32 @@ export default function CheckoutScreen({ navigation }) {
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("cod");
 
-  useEffect(() => {
-    const loadDefaultAddress = async () => {
-      try {
-        if (!token) return;
+  const loadDefaultAddress = useCallback(async () => {
+  try {
+    if (!token) return;
 
-        const response = await getAddressesApi(token);
+    const response = await getAddressesApi(token);
 
-        const addresses = response.data || [];
+    const addresses = response.data || [];
 
-        const defaultAddress = addresses.find(
-          (address) => address.isDefault === true,
-        );
+    const defaultAddress = addresses.find(
+      (address) => address.isDefault,
+    );
 
-        if (defaultAddress) {
-          setSelectedAddress(defaultAddress);
-        }
-      } catch (error) {
-        console.log("Lỗi lấy địa chỉ:", error.response?.data || error.message);
-      }
-    };
+    setSelectedAddress(defaultAddress || null);
+  } catch (error) {
+    console.log(
+      "Lỗi lấy địa chỉ:",
+      error.response?.data || error.message,
+    );
+  }
+}, [token]);
 
+useFocusEffect(
+  useCallback(() => {
     loadDefaultAddress();
-  }, [token]);
+  }, [loadDefaultAddress]),
+);
 
   // =========================
   // TÍNH TIỀN
