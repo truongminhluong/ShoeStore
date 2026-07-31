@@ -9,8 +9,10 @@ import {
 
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { getImageSource } from "../../utils/imageHelper";
 
 const { width } = Dimensions.get("window");
+
 
 export default function ProductCard({ item, favoriteIds, onToggleFavorite }) {
   const navigation = useNavigation();
@@ -43,7 +45,7 @@ export default function ProductCard({ item, favoriteIds, onToggleFavorite }) {
     >
       <View style={styles.imageContainer}>
         <Image
-          source={{ uri: item?.image || "" }}
+          source={getImageSource(item?.image)}
           style={styles.image}
           resizeMode="cover"
         />

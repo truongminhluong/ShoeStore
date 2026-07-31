@@ -8,7 +8,7 @@ import {
 import BrandItem from "./BrandItem";
 import useBrandViewModel from "../../viewmodels/useBrandViewModel";
 
-export default function BrandSection() {
+export default function BrandSection({ navigation, selectedBrandId, onSelectBrand }) {
   const { brands, loading } = useBrandViewModel();
 
   if (loading) {
@@ -30,7 +30,13 @@ export default function BrandSection() {
         renderItem={({ item }) => (
           <BrandItem
             item={item}
-            onPress={() => {}}
+            onPress={() =>
+              navigation.navigate("AllProductsByBrand", {
+                brand: item,
+                // brandId: item._id,
+                // brandName: item.name,
+              })
+            }
           />
         )}
       />

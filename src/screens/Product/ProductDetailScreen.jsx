@@ -18,11 +18,16 @@ import useProductDetailViewModel from "../../viewmodels/useProductDetailViewMode
 import RelatedProductSection from "../Product/RelatedProductSection";
 import { useCart } from "../../context/CartContext";
 import ReviewSection from "../../components/product/ReviewSection";
+import { useFavorite } from "../../context/FavoriteContext";
+import { getImageSource } from "../../utils/imageHelper";
+
 
 export default function ProductDetailScreen({ route, navigation }) {
   const productId = route?.params?.productId;
 
   const { addToCart } = useCart();
+
+  const { favoriteIds, toggleFavorite } = useFavorite();
 
   const {
     product,
@@ -37,6 +42,10 @@ export default function ProductDetailScreen({ route, navigation }) {
     handleSelectColor,
     handleSelectSize,
   } = useProductDetailViewModel(productId);
+
+  const isFavorite =
+    Array.isArray(favoriteIds) &&
+    favoriteIds.includes(product?._id);
 
   const insets = useSafeAreaInsets();
 
@@ -104,8 +113,20 @@ export default function ProductDetailScreen({ route, navigation }) {
 
         <Text style={styles.headerTitle}>Chi tiết sản phẩm</Text>
 
-        <TouchableOpacity style={styles.headerButton}>
-          <Ionicons name="heart-outline" size={25} color={COLORS.text} />
+        <TouchableOpacity
+          style={styles.headerButton}
+          disabled={!product}
+          onPress={() => {
+            if (!product?._id) return;
+
+            toggleFavorite(product._id);
+          }}
+        >
+          <Ionicons
+            name={isFavorite ? "heart" : "heart-outline"}
+            size={25}
+            color={isFavorite ? "#E53935" : COLORS.text}
+          />
         </TouchableOpacity>
       </View>
 
@@ -116,7 +137,7 @@ export default function ProductDetailScreen({ route, navigation }) {
         {/* ẢNH SẢN PHẨM */}
         <View style={styles.imageContainer}>
           <Image
-            source={{ uri: displayImage }}
+            source={getImageSource(displayImage)}
             style={styles.productImage}
             resizeMode="cover"
           />

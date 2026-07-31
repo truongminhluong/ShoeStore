@@ -4,13 +4,14 @@ import {
   FlatList,
   StyleSheet,
   ActivityIndicator,
+  TouchableOpacity,
 } from "react-native";
 
 import ProductCard from "./ProductCard";
 import useNewestProductsViewModel from "../../viewmodels/useNewestProductsViewModel";
 
 export default function ProductSection(
-  { favoriteIds, onToggleFavorite }
+  { favoriteIds, onToggleFavorite, navigation }
 ) {
   const { products, loading } = useNewestProductsViewModel();
 
@@ -26,7 +27,13 @@ export default function ProductSection(
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.title}>Hàng mới về</Text>
-        <Text style={styles.more}>Xem tất cả</Text>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("AllProducts")}
+        >
+          <Text style={styles.more}>
+            Xem tất cả
+          </Text>
+        </TouchableOpacity>
       </View>
 
       <FlatList

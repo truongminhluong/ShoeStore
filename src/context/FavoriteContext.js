@@ -4,6 +4,7 @@ import {
     useEffect,
     useState,
 } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import {
     getFavorites,
@@ -34,6 +35,23 @@ export const FavoriteProvider = ({ children }) => {
 
     const fetchFavorites = async () => {
         try {
+            const tokenKeys = ["token", "accessToken", "authToken"];
+            let hasToken = false;
+
+            for (const key of tokenKeys) {
+                const value = await AsyncStorage.getItem(key);
+                if (value) {
+                    hasToken = true;
+                    break;
+                }
+            }
+
+            if (!hasToken) {
+                setFavorites([]);
+                setFavoriteIds([]);
+                return;
+            }
+
             setLoading(true);
 
             const response = await getFavorites();

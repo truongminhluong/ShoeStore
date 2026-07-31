@@ -75,10 +75,14 @@ export default function LoginScreen({ navigation }) {
 
       const response = await login(email, password);
 
-      if (response.success) {
-        const token = response.data.token;
+      if (response?.success) {
+        const payload = response?.data || response;
+        const token = payload?.token || payload?.accessToken || null;
+        const user = payload?.user || response?.user || null;
 
-        const user = response.data.user;
+        if (!token) {
+          throw new Error("Không nhận được token từ server");
+        }
 
         await saveLogin(token, user);
 

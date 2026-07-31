@@ -142,6 +142,7 @@ export default function HomeScreen({ navigation }) {
         {/* BRAND */}
 
         <BrandSection
+          navigation={navigation}
           selectedBrandId={selectedBrand?.id}
           onSelectBrand={handleSelectBrand}
         />
@@ -149,6 +150,7 @@ export default function HomeScreen({ navigation }) {
         {/* SẢN PHẨM */}
 
         <ProductSection
+          navigation={navigation}
           products={filteredProducts}
           searchText={searchText}
           selectedBrandName={selectedBrand?.name}

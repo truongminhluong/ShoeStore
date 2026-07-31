@@ -1,4 +1,6 @@
 import { TouchableOpacity, View, Image, Text, StyleSheet } from "react-native";
+import { getImageSource } from "../../utils/imageHelper";
+
 
 export default function BrandItem({ item, onPress }) {
   return (
@@ -9,7 +11,7 @@ export default function BrandItem({ item, onPress }) {
     >
       <View style={styles.logoContainer}>
         <Image
-          source={{ uri: item.logo }}
+          source={getImageSource(item?.logo)}
           style={styles.logo}
           resizeMode="contain"
         />

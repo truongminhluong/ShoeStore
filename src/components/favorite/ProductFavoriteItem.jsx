@@ -6,16 +6,29 @@ import {
   Image,
   TouchableOpacity,
 } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 
 import COLORS from "../../constants/colors";
 import FONTS from "../../constants/fonts";
+import { getImageSource } from "../../utils/imageHelper";
+
 
 const ProductFavoriteItem = ({ item, onRemove }) => {
+  const navigation = useNavigation();
+  const handlePress = () => {
+    if (!item?._id) return;
+
+    navigation.navigate("ProductDetail", {
+      productId: item._id,
+    });
+  };
   return (
-    <View style={styles.card}>
+    <TouchableOpacity
+      style={styles.card}
+      onPress={handlePress}>
       <Image
-        source={{ uri: item.image }}
+        source={getImageSource(item?.image)}
         style={styles.image}
       />
 
@@ -64,16 +77,16 @@ const ProductFavoriteItem = ({ item, onRemove }) => {
           </Text>
 
           {/* NÚT THÊM VÀO GIỎ */}
-          <TouchableOpacity style={styles.cartButton}>
+          {/* <TouchableOpacity style={styles.cartButton}>
             <Ionicons
               name="cart-outline"
               size={18}
               color={COLORS.white}
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 

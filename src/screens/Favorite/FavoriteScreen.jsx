@@ -42,7 +42,7 @@ const normalizeFavorites = (payload) => {
   return [];
 };
 
-const FavoriteScreen = () => {
+const FavoriteScreen = ({ navigation }) => {
 
   const [deleting, setDeleting] = useState(false);
   const {
@@ -110,7 +110,7 @@ const FavoriteScreen = () => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <Header />
+      <Header navigation={navigation} />
 
       <View style={styles.container}>
 
@@ -182,15 +182,39 @@ const FavoriteScreen = () => {
 
         <FlatList
           data={favorites}
-          keyExtractor={(item, index) => item?._id || item?.id || `favorite-${index}`}
+          keyExtractor={(item, index) =>
+            item?._id || item?.id || `favorite-${index}`
+          }
           numColumns={2}
           showsVerticalScrollIndicator={false}
-          columnWrapperStyle={{
-            justifyContent: "space-between",
-          }}
+          columnWrapperStyle={
+            favorites.length > 0
+              ? { justifyContent: "space-between" }
+              : undefined
+          }
           renderItem={({ item }) => (
-            <ProductFavoriteItem item={item} onRemove={removeItem} />
+            <ProductFavoriteItem
+              item={item}
+              onRemove={removeItem}
+            />
           )}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Ionicons
+                name="heart-outline"
+                size={80}
+                color="#D1D5DB"
+              />
+
+              <Text style={styles.emptyTitle}>
+                Chưa có sản phẩm yêu thích
+              </Text>
+
+              <Text style={styles.emptyDescription}>
+                Hãy nhấn vào biểu tượng trái tim để thêm sản phẩm vào danh sách yêu thích.
+              </Text>
+            </View>
+          }
         />
       </View>
     </SafeAreaView>
@@ -293,5 +317,27 @@ const styles = StyleSheet.create({
     color: "#EF4444",
     fontSize: 14,
     fontFamily: FONTS.medium,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 30,
+    marginTop: 80,
+  },
+
+  emptyTitle: {
+    marginTop: 18,
+    fontSize: 22,
+    fontWeight: "700",
+    color: COLORS.black,
+  },
+
+  emptyDescription: {
+    marginTop: 10,
+    fontSize: 15,
+    color: "#8E8E93",
+    textAlign: "center",
+    lineHeight: 22,
   },
 });

@@ -36,7 +36,7 @@ export default function SearchBar({
         ) : null}
       </View>
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={[
           styles.filterButton,
           hasActiveFilters && styles.activeFilterButton,
@@ -49,7 +49,7 @@ export default function SearchBar({
           size={24}
           color={COLORS.white}
         />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 }

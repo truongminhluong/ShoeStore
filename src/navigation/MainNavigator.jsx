@@ -12,6 +12,8 @@ import PaymentResultScreen from "../screens/Payment/PaymentResultScreen";
 import NotificationScreen from "../screens/Notification/NotificationScreen";
 import CreateReviewScreen from "../screens/Review/CreateReviewScreen";
 import OrderDetailScreen from "../screens/Order/OrderDetailScreen";
+import AllProductsScreen from "../screens/Product/AllProductsScreen";
+import AllProductsByBrandScreen from "../screens/Product/AllProductsByBrandScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -74,7 +76,22 @@ export default function MainNavigator() {
           headerShown: false,
         }}
       />
-      
+      {/* Màn hình tất cả sản phẩm */}
+      <Stack.Screen
+        name="AllProducts"
+        component={AllProductsScreen}
+        options={{
+          title: "Tất cả sản phẩm",
+        }}
+      />
+      {/* Màn hình tất cả sản phẩm theo danh mục */}
+      <Stack.Screen
+        name="AllProductsByBrand"
+        component={AllProductsByBrandScreen}
+        options={{
+          title: "Sản phẩm theo hãng",
+        }}
+      />
     </Stack.Navigator>
   );
 }

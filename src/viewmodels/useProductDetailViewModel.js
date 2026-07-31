@@ -34,7 +34,7 @@ export default function useProductDetailViewModel(productId) {
 
       setProduct(fetchedProduct);
       setVariants(fetchedVariants);
-
+      // console.log("Variants:", fetchedVariants);
     } catch (error) {
       console.log(
         "Lỗi lấy chi tiết sản phẩm:",
