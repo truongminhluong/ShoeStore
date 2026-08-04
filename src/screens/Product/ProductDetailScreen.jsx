@@ -83,6 +83,24 @@ export default function ProductDetailScreen({ route, navigation }) {
     Alert.alert("Thành công", "Đã thêm sản phẩm vào giỏ hàng");
   };
 
+  const handleBuyNow = () => {
+    if (!selectedVariant) {
+      Alert.alert("Thông báo", "Vui lòng chọn màu sắc và kích thước sản phẩm");
+      return;
+    }
+
+    navigation.navigate("Checkout", {
+      isBuyNow: true,
+      items: [
+        {
+          product,
+          variant: selectedVariant,
+          quantity: 1,
+        },
+      ],
+    });
+  };
+
   // =========================
   // ẢNH HIỂN THỊ
   // =========================
@@ -147,9 +165,13 @@ export default function ProductDetailScreen({ route, navigation }) {
         <View style={styles.infoContainer}>
           {/* THƯƠNG HIỆU + DANH MỤC */}
           <View style={styles.brandRow}>
-            <Text style={styles.brandName}>{product?.brand?.name || "Brand"}</Text>
+            <Text style={styles.brandName}>
+              {product?.brand?.name || "Brand"}
+            </Text>
 
-            <Text style={styles.categoryName}>{product?.category?.name || "Category"}</Text>
+            <Text style={styles.categoryName}>
+              {product?.category?.name || "Category"}
+            </Text>
           </View>
 
           {/* TÊN */}
@@ -260,7 +282,9 @@ export default function ProductDetailScreen({ route, navigation }) {
           {/* MÔ TẢ */}
           <Text style={styles.sectionTitle}>Mô tả sản phẩm</Text>
 
-          <Text style={styles.description}>{product?.description || "Mô tả đang được cập nhật."}</Text>
+          <Text style={styles.description}>
+            {product?.description || "Mô tả đang được cập nhật."}
+          </Text>
 
           {/* CHÍNH SÁCH */}
           <View style={styles.policyContainer}>
@@ -331,9 +355,7 @@ export default function ProductDetailScreen({ route, navigation }) {
         <TouchableOpacity
           style={[styles.buyButton, !selectedVariant && styles.disabledButton]}
           disabled={!selectedVariant}
-          onPress={() => {
-            console.log("Mua ngay:", selectedVariant);
-          }}
+          onPress={handleBuyNow}
         >
           <Text style={styles.buyButtonText}>Mua ngay</Text>
         </TouchableOpacity>

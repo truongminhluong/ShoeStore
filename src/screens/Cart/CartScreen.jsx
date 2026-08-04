@@ -113,18 +113,30 @@ export default function CartScreen({ navigation }) {
   if (cartItems.length === 0) {
     return (
       <View style={styles.emptyContainer}>
-        <Ionicons name="cart-outline" size={70} color={COLORS.primary} />
+        <View style={styles.iconWrapper}>
+          <Ionicons name="cart-outline" size={60} color={COLORS.primary} />
+        </View>
 
-        <Text style={styles.emptyTitle}>Giỏ hàng đang trống</Text>
+        <Text style={styles.emptyTitle}>Giỏ hàng của bạn đang trống</Text>
 
         <Text style={styles.emptyText}>
-          Hãy thêm sản phẩm yêu thích vào giỏ hàng
+          Có vẻ bạn chưa thêm sản phẩm nào vào giỏ hàng.
+          {"\n"}
+          Hãy khám phá những mẫu giày mới nhất nhé!
         </Text>
 
         <TouchableOpacity
+          activeOpacity={0.8}
           style={styles.continueButton}
           onPress={() => navigation.navigate("Home")}
         >
+          <Ionicons
+            name="bag-handle-outline"
+            size={20}
+            color="#fff"
+            style={{ marginRight: 8 }}
+          />
+
           <Text style={styles.continueButtonText}>Tiếp tục mua sắm</Text>
         </TouchableOpacity>
       </View>
@@ -192,20 +204,12 @@ export default function CartScreen({ navigation }) {
               <TouchableOpacity
                 style={styles.paymentButton}
                 onPress={() => {
-                  navigation.navigate("Checkout")
+                  navigation.navigate("Checkout");
                 }}
               >
                 <Text style={styles.paymentText}>Thanh toán ngay</Text>
 
                 <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
-              </TouchableOpacity>
-
-              {/* TIẾP TỤC MUA SẮM */}
-              <TouchableOpacity
-                style={styles.continueButton}
-                onPress={() => navigation.navigate("Home")}
-              >
-                <Text style={styles.continueButtonText}>Tiếp tục mua sắm</Text>
               </TouchableOpacity>
 
               {/* CHÍNH SÁCH */}
@@ -525,23 +529,51 @@ const styles = StyleSheet.create({
   // =========================
   emptyContainer: {
     flex: 1,
-    backgroundColor: "#F8F7FF",
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 30,
+    backgroundColor: "#F8FAFC",
+  },
+
+  iconWrapper: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: "#EEF2FF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 28,
   },
 
   emptyTitle: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "700",
-    color: "#1F2937",
-    marginTop: 18,
+    color: "#111827",
+    marginBottom: 12,
   },
 
   emptyText: {
-    fontSize: 14,
+    fontSize: 15,
     color: "#6B7280",
-    marginTop: 10,
     textAlign: "center",
+    lineHeight: 24,
+    paddingHorizontal: 20,
+  },
+
+  continueButton: {
+    marginTop: 35,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: COLORS.primary,
+    paddingVertical: 15,
+    paddingHorizontal: 35,
+    borderRadius: 30,
+  },
+
+  continueButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
   },
 });

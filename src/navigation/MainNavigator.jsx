@@ -14,6 +14,7 @@ import CreateReviewScreen from "../screens/Review/CreateReviewScreen";
 import OrderDetailScreen from "../screens/Order/OrderDetailScreen";
 import AllProductsScreen from "../screens/Product/AllProductsScreen";
 import AllProductsByBrandScreen from "../screens/Product/AllProductsByBrandScreen";
+import VoucherScreen from "../screens/Voucher/VoucherScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -24,25 +25,18 @@ export default function MainNavigator() {
         headerShown: false,
       }}
     >
-      {/* Các màn hình chính có Bottom Tab */}
       <Stack.Screen name="MainTabs" component={BottomTabs} />
 
-      {/* Màn hình chi tiết sản phẩm */}
       <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
 
-      {/* Màn hình thanh toán */}
       <Stack.Screen name="Checkout" component={CheckoutScreen} />
 
-      {/* Màn hình đặt hàng thành công */}
       <Stack.Screen name="OrderSuccess" component={OrderSuccessScreen} />
 
-      {/* Màn hình danh sách đơn hàng */}
       <Stack.Screen name="Orders" component={OrderScreen} />
 
-      {/* Màn hình danh sách địa chỉ */}
       <Stack.Screen name="Address" component={AddressScreen} />
 
-      {/* Màn hình thêm địa chỉ */}
       <Stack.Screen name="AddAddress" component={AddAddressScreen} />
 
       <Stack.Screen
@@ -53,13 +47,10 @@ export default function MainNavigator() {
         }}
       />
 
-      {/* Màn hình kết quả thanh toán */}
       <Stack.Screen name="PaymentResult" component={PaymentResultScreen} />
 
-      {/* Màn hình thông báo */}
       <Stack.Screen name="Notifications" component={NotificationScreen} />
 
-      {/* Màn hình tạo đánh giá */}
       <Stack.Screen
         name="CreateReview"
         component={CreateReviewScreen}
@@ -68,7 +59,6 @@ export default function MainNavigator() {
         }}
       />
 
-      {/* Màn hình chi tiết đơn hàng */}
       <Stack.Screen
         name="OrderDetail"
         component={OrderDetailScreen}
@@ -76,7 +66,7 @@ export default function MainNavigator() {
           headerShown: false,
         }}
       />
-      {/* Màn hình tất cả sản phẩm */}
+
       <Stack.Screen
         name="AllProducts"
         component={AllProductsScreen}
@@ -84,7 +74,7 @@ export default function MainNavigator() {
           title: "Tất cả sản phẩm",
         }}
       />
-      {/* Màn hình tất cả sản phẩm theo danh mục */}
+
       <Stack.Screen
         name="AllProductsByBrand"
         component={AllProductsByBrandScreen}
@@ -92,6 +82,8 @@ export default function MainNavigator() {
           title: "Sản phẩm theo hãng",
         }}
       />
+
+      <Stack.Screen name="Voucher" component={VoucherScreen} />
     </Stack.Navigator>
   );
 }

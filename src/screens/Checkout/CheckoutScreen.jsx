@@ -24,10 +24,17 @@ import { useEffect, useState } from "react";
 import { getAddressesApi } from "../../services/addressService";
 import { createVnpayPaymentApi } from "../../services/vnpayService";
 
-export default function CheckoutScreen({ navigation }) {
+export default function CheckoutScreen({ navigation, route }) {
   const insets = useSafeAreaInsets();
 
   const { cartItems, clearCart } = useCart();
+
+  const params = route?.params || {};
+
+  const isBuyNow = params.isBuyNow ?? false;
+  const buyNowItems = params.items ?? [];
+
+  const checkoutItems = isBuyNow ? buyNowItems : cartItems;
 
   const { token } = useAuth();
 
@@ -35,46 +42,63 @@ export default function CheckoutScreen({ navigation }) {
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("cod");
 
+  const [selectedVoucher, setSelectedVoucher] = useState(null);
+
   const loadDefaultAddress = useCallback(async () => {
-  try {
-    if (!token) return;
+    try {
+      if (!token) return;
 
-    const response = await getAddressesApi(token);
+      const response = await getAddressesApi(token);
 
-    const addresses = response.data || [];
+      const addresses = response.data || [];
 
-    const defaultAddress = addresses.find(
-      (address) => address.isDefault,
-    );
+      const defaultAddress = addresses.find((address) => address.isDefault);
 
-    setSelectedAddress(defaultAddress || null);
-  } catch (error) {
-    console.log(
-      "Lỗi lấy địa chỉ:",
-      error.response?.data || error.message,
-    );
-  }
-}, [token]);
+      setSelectedAddress(defaultAddress || null);
+    } catch (error) {
+      console.log("Lỗi lấy địa chỉ:", error.response?.data || error.message);
+    }
+  }, [token]);
 
-useFocusEffect(
-  useCallback(() => {
-    loadDefaultAddress();
-  }, [loadDefaultAddress]),
-);
+  useFocusEffect(
+    useCallback(() => {
+      loadDefaultAddress();
+
+      if (route.params?.selectedVoucher) {
+        setSelectedVoucher(route.params.selectedVoucher);
+
+        // Xóa params sau khi đã lấy để tránh cập nhật lại nhiều lần
+        navigation.setParams({
+          selectedVoucher: undefined,
+        });
+      }
+    }, [loadDefaultAddress, route.params?.selectedVoucher]),
+  );
 
   // =========================
   // TÍNH TIỀN
   // =========================
 
-  const subtotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0,
-  );
+  const subtotal = checkoutItems.reduce((total, item) => {
+    if (isBuyNow) {
+      const price =
+        Number(item.product.discountPrice) > 0
+          ? Number(item.product.discountPrice)
+          : Number(item.product.price);
 
-  const shippingFee = 0;
-  const discount = 0;
+      return total + price * item.quantity;
+    }
 
-  const total = subtotal + shippingFee - discount;
+    return total + item.price * item.quantity;
+  }, 0);
+
+  const shippingFee = 35000;
+
+  const tax = subtotal * 0.08;
+
+  const discount = selectedVoucher?.discount || 0;
+
+  const total = subtotal + shippingFee + tax - discount;
 
   const formatPrice = (price) => {
     return `${price.toLocaleString("vi-VN")}đ`;
@@ -86,7 +110,7 @@ useFocusEffect(
       // KIỂM TRA GIỎ HÀNG
       // =========================
 
-      if (cartItems.length === 0) {
+      if (checkoutItems.length === 0) {
         Alert.alert("Thông báo", "Giỏ hàng đang trống");
         return;
       }
@@ -113,9 +137,9 @@ useFocusEffect(
       // TẠO DANH SÁCH SẢN PHẨM
       // =========================
 
-      const orderItems = cartItems.map((item) => ({
-        product: item.productId,
-        variant: item.variantId,
+      const orderItems = checkoutItems.map((item) => ({
+        product: isBuyNow ? item.product._id : item.productId,
+        variant: isBuyNow ? item.variant._id : item.variantId,
         quantity: item.quantity,
       }));
 
@@ -131,6 +155,14 @@ useFocusEffect(
           phone: selectedAddress.phone,
           address: `${selectedAddress.addressDetail}, ${selectedAddress.ward}, ${selectedAddress.district}, ${selectedAddress.province}`,
         },
+
+        subtotal,
+        shippingFee,
+        tax,
+        discount,
+        total,
+
+        voucher: selectedVoucher?._id || null,
 
         paymentMethod: selectedPaymentMethod,
       };
@@ -152,7 +184,9 @@ useFocusEffect(
       // =====================================================
 
       if (selectedPaymentMethod === "cod") {
-        clearCart();
+        if (!isBuyNow) {
+          clearCart();
+        }
 
         navigation.replace("OrderSuccess", {
           orderId: order._id,
@@ -438,6 +472,90 @@ useFocusEffect(
         </View>
 
         {/* =========================
+                  VOUCHER
+        ========================= */}
+
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionTitleContainer}>
+              <Ionicons
+                name="ticket-outline"
+                size={20}
+                color={COLORS.primary}
+              />
+
+              <Text style={styles.sectionTitle}>Voucher</Text>
+            </View>
+
+            <TouchableOpacity
+              onPress={() =>
+                navigation.navigate("Voucher", {
+                  subtotal,
+                  selectedVoucher,
+                  onSelectVoucher: (voucher) => {
+                    setSelectedVoucher(voucher);
+                  },
+                })
+              }
+            >
+              <Text style={styles.changeText}>
+                {selectedVoucher ? "Thay đổi" : "Chọn"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          <TouchableOpacity
+            style={styles.voucherBox}
+            activeOpacity={0.8}
+            onPress={() =>
+              navigation.navigate("Voucher", {
+                subtotal,
+                selectedVoucher,
+                onSelectVoucher: (voucher) => {
+                  setSelectedVoucher(voucher);
+                },
+              })
+            }
+          >
+            <View style={styles.voucherLeft}>
+              <View style={styles.voucherIcon}>
+                <Ionicons name="pricetag" size={22} color="#FFFFFF" />
+              </View>
+
+              <View style={styles.voucherInfo}>
+                {selectedVoucher ? (
+                  <>
+                    <Text style={styles.voucherCode}>
+                      {selectedVoucher.code}
+                    </Text>
+
+                    <Text style={styles.voucherDiscount}>
+                      Giảm {selectedVoucher.discount.toLocaleString("vi-VN")}đ
+                    </Text>
+
+                    <Text style={styles.voucherDesc}>
+                      {selectedVoucher.description}
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.voucherTitle}>
+                      Chưa áp dụng voucher
+                    </Text>
+
+                    <Text style={styles.voucherDesc}>
+                      Chọn mã giảm giá để tiết kiệm hơn
+                    </Text>
+                  </>
+                )}
+              </View>
+            </View>
+
+            <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
+          </TouchableOpacity>
+        </View>
+
+        {/* =========================
             TÓM TẮT ĐƠN HÀNG
         ========================= */}
 
@@ -445,38 +563,52 @@ useFocusEffect(
           <Text style={styles.summaryTitle}>Tóm tắt đơn hàng</Text>
 
           {/* DANH SÁCH SẢN PHẨM */}
+          {checkoutItems.map((item) => {
+            const image = isBuyNow
+              ? item.variant.image || item.product.image
+              : item.image;
 
-          {cartItems.map((item) => (
-            <View key={item.variantId} style={styles.productItem}>
-              <View style={styles.imageContainer}>
-                <Image
-                  source={{
-                    uri: item.image,
-                  }}
-                  style={styles.productImage}
-                  resizeMode="cover"
-                />
+            const name = isBuyNow ? item.product.name : item.name;
+
+            const color = isBuyNow ? item.variant.colorName : item.colorName;
+
+            const size = isBuyNow ? item.variant.size : item.size;
+
+            const price = isBuyNow
+              ? Number(item.product.discountPrice) > 0
+                ? Number(item.product.discountPrice)
+                : Number(item.product.price)
+              : item.price;
+
+            return (
+              <View
+                key={isBuyNow ? item.variant._id : item.variantId}
+                style={styles.productItem}
+              >
+                <View style={styles.imageContainer}>
+                  <Image source={{ uri: image }} style={styles.productImage} />
+                </View>
+
+                <View style={styles.productInfo}>
+                  <Text style={styles.productName} numberOfLines={2}>
+                    {name}
+                  </Text>
+
+                  <Text style={styles.variantText}>
+                    {color} • Size: {size}
+                  </Text>
+
+                  <Text style={styles.quantityText}>
+                    Số lượng: {item.quantity}
+                  </Text>
+                </View>
+
+                <Text style={styles.productPrice}>
+                  {formatPrice(price * item.quantity)}
+                </Text>
               </View>
-
-              <View style={styles.productInfo}>
-                <Text style={styles.productName} numberOfLines={2}>
-                  {item.name}
-                </Text>
-
-                <Text style={styles.variantText}>
-                  {item.colorName} • Size: {item.size}
-                </Text>
-
-                <Text style={styles.quantityText}>
-                  Số lượng: {item.quantity}
-                </Text>
-              </View>
-
-              <Text style={styles.productPrice}>
-                {formatPrice(item.price * item.quantity)}
-              </Text>
-            </View>
-          ))}
+            );
+          })}
 
           <View style={styles.divider} />
 
@@ -489,11 +621,10 @@ useFocusEffect(
           </View>
 
           {/* PHÍ VẬN CHUYỂN */}
-
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Phí vận chuyển</Text>
 
-            <Text style={styles.freeText}>Miễn phí</Text>
+            <Text style={styles.summaryValue}>{formatPrice(shippingFee)}</Text>
           </View>
 
           {/* GIẢM GIÁ */}
@@ -505,6 +636,13 @@ useFocusEffect(
           </View>
 
           <View style={styles.divider} />
+
+          {/* THUẾ */}
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Thuế (VAT 8%)</Text>
+
+            <Text style={styles.summaryValue}>{formatPrice(tax)}</Text>
+          </View>
 
           {/* TỔNG CỘNG */}
 
@@ -1072,5 +1210,59 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#6B7280",
     textAlign: "center",
+  },
+
+  // =========================
+  // VOUCHER
+  // =========================
+
+  voucherBox: {
+    marginTop: 15,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 18,
+    backgroundColor: "#fff",
+    padding: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+
+  voucherLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+
+  voucherIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: 12,
+    backgroundColor: COLORS.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 14,
+  },
+
+  voucherInfo: {
+    flex: 1,
+  },
+
+  voucherTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: COLORS.text,
+  },
+
+  voucherCode: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: COLORS.primary,
+  },
+
+  voucherDesc: {
+    marginTop: 4,
+    fontSize: 13,
+    color: "#6B7280",
   },
 });
