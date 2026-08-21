@@ -19,32 +19,32 @@ export default function ProfileScreen({ navigation }) {
 
   const menus = [
     {
-      title: "Account",
+      title: "Tài khoản",
       icon: "person-outline",
       screen: "Account",
     },
     {
-      title: "Orders",
+      title: "Đơn hàng",
       icon: "bag-handle-outline",
       screen: "Orders",
     },
     {
-      title: "Address",
+      title: "Địa chỉ",
       icon: "location-outline",
       screen: "Address",
     },
     {
-      title: "Wishlist",
+      title: "Yêu thích",
       icon: "heart-outline",
       screen: "Wishlist",
     },
     {
-      title: "Settings",
+      title: "Cài đặt",
       icon: "settings-outline",
       screen: "Settings",
     },
     {
-      title: "Help",
+      title: "Trợ giúp",
       icon: "help-circle-outline",
       screen: "Help",
     },
@@ -100,7 +100,7 @@ export default function ProfileScreen({ navigation }) {
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>12</Text>
 
-            <Text style={styles.statLabel}>Orders</Text>
+            <Text style={styles.statLabel}>Đơn hàng</Text>
           </View>
 
           <View style={styles.divider} />
@@ -108,7 +108,7 @@ export default function ProfileScreen({ navigation }) {
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>8</Text>
 
-            <Text style={styles.statLabel}>Wishlist</Text>
+            <Text style={styles.statLabel}>Yêu thích</Text>
           </View>
 
           <View style={styles.divider} />
@@ -116,7 +116,7 @@ export default function ProfileScreen({ navigation }) {
           <View style={styles.statItem}>
             <Text style={styles.statNumber}>5</Text>
 
-            <Text style={styles.statLabel}>Reviews</Text>
+            <Text style={styles.statLabel}>Đánh giá</Text>
           </View>
         </View>
 
