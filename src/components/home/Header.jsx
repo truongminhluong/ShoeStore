@@ -26,7 +26,7 @@ export default function Header({
 
       {/* LOGO */}
       <Text style={styles.logo}>
-        KickStore
+        Ryde
       </Text>
 
       {/* NÚT THÔNG BÁO */}

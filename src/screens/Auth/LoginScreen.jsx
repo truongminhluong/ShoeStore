@@ -26,21 +26,15 @@ export default function LoginScreen({ navigation }) {
   const { login: saveLogin } = useAuth();
 
   const [email, setEmail] = useState("");
-
   const [password, setPassword] = useState("");
-
   const [showPassword, setShowPassword] = useState(false);
-
   const [loading, setLoading] = useState(false);
-
   const [remember, setRemember] = useState(true);
 
   const [emailFocus, setEmailFocus] = useState(false);
-
   const [passwordFocus, setPasswordFocus] = useState(false);
 
   const [emailError, setEmailError] = useState("");
-
   const [passwordError, setPasswordError] = useState("");
 
   const validate = () => {
@@ -77,11 +71,12 @@ export default function LoginScreen({ navigation }) {
 
       if (response?.success) {
         const payload = response?.data || response;
-        const token = payload?.token || payload?.accessToken || null;
+        const token =
+          payload?.token || payload?.accessToken || null;
         const user = payload?.user || response?.user || null;
 
         if (!token) {
-          throw new Error("Không nhận được token từ server");
+          throw new Error("Không nhận được token từ máy chủ");
         }
 
         await saveLogin(token, user);
@@ -89,7 +84,10 @@ export default function LoginScreen({ navigation }) {
         console.log("Đăng nhập thành công");
       }
     } catch (error) {
-      alert(error.response?.data?.message || "Đăng nhập thất bại");
+      alert(
+        error.response?.data?.message ||
+          "Đăng nhập thất bại"
+      );
     } finally {
       setLoading(false);
     }
@@ -101,7 +99,9 @@ export default function LoginScreen({ navigation }) {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={
+          Platform.OS === "ios" ? "padding" : "height"
+        }
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <ScrollView
@@ -109,17 +109,21 @@ export default function LoginScreen({ navigation }) {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.content}
           >
-            {/* Header */}
+            {/* Tiêu đề */}
 
             <View style={styles.header}>
-              <Text style={styles.logo}>SHOESTORE</Text>
+              <Text style={styles.logo}>RYDE</Text>
 
-              <Text style={styles.title}>Welcome Back 👋</Text>
+              <Text style={styles.title}>
+                Chào mừng trở lại 👋
+              </Text>
 
-              <Text style={styles.subtitle}>Sign in to continue shopping</Text>
+              <Text style={styles.subtitle}>
+                Đăng nhập để tiếp tục mua sắm
+              </Text>
             </View>
 
-            {/* Form */}
+            {/* Biểu mẫu */}
 
             <View style={styles.form}>
               {/* Email */}
@@ -127,13 +131,20 @@ export default function LoginScreen({ navigation }) {
               <Text style={styles.label}>EMAIL</Text>
 
               <View
-                style={[styles.inputContainer, emailFocus && styles.inputFocus]}
+                style={[
+                  styles.inputContainer,
+                  emailFocus && styles.inputFocus,
+                ]}
               >
-                <Ionicons name="mail-outline" size={22} color="#94A3B8" />
+                <Ionicons
+                  name="mail-outline"
+                  size={22}
+                  color="#94A3B8"
+                />
 
                 <TextInput
                   style={styles.input}
-                  placeholder="Enter your email"
+                  placeholder="Nhập email của bạn"
                   placeholderTextColor="#94A3B8"
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -145,12 +156,14 @@ export default function LoginScreen({ navigation }) {
               </View>
 
               {emailError ? (
-                <Text style={styles.error}>{emailError}</Text>
+                <Text style={styles.error}>
+                  {emailError}
+                </Text>
               ) : null}
 
-              {/* Password */}
+              {/* Mật khẩu */}
 
-              <Text style={styles.label}>PASSWORD</Text>
+              <Text style={styles.label}>MẬT KHẨU</Text>
 
               <View
                 style={[
@@ -166,7 +179,7 @@ export default function LoginScreen({ navigation }) {
 
                 <TextInput
                   style={styles.input}
-                  placeholder="Enter your password"
+                  placeholder="Nhập mật khẩu của bạn"
                   placeholderTextColor="#94A3B8"
                   secureTextEntry={!showPassword}
                   value={password}
@@ -176,10 +189,16 @@ export default function LoginScreen({ navigation }) {
                 />
 
                 <TouchableOpacity
-                  onPress={() => setShowPassword(!showPassword)}
+                  onPress={() =>
+                    setShowPassword(!showPassword)
+                  }
                 >
                   <Ionicons
-                    name={showPassword ? "eye-off-outline" : "eye-outline"}
+                    name={
+                      showPassword
+                        ? "eye-off-outline"
+                        : "eye-outline"
+                    }
                     size={22}
                     color="#94A3B8"
                   />
@@ -187,10 +206,12 @@ export default function LoginScreen({ navigation }) {
               </View>
 
               {passwordError ? (
-                <Text style={styles.error}>{passwordError}</Text>
+                <Text style={styles.error}>
+                  {passwordError}
+                </Text>
               ) : null}
 
-              {/* Remember */}
+              {/* Ghi nhớ đăng nhập */}
 
               <View style={styles.row}>
                 <TouchableOpacity
@@ -198,22 +219,32 @@ export default function LoginScreen({ navigation }) {
                   onPress={() => setRemember(!remember)}
                 >
                   <Ionicons
-                    name={remember ? "checkbox" : "square-outline"}
+                    name={
+                      remember
+                        ? "checkbox"
+                        : "square-outline"
+                    }
                     size={22}
                     color={COLORS.primary}
                   />
 
-                  <Text style={styles.rememberText}>Remember me</Text>
+                  <Text style={styles.rememberText}>
+                    Ghi nhớ đăng nhập
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
-                  onPress={() => navigation.navigate("ForgotPassword")}
+                  onPress={() =>
+                    navigation.navigate("ForgotPassword")
+                  }
                 >
-                  <Text style={styles.forgot}>Forgot?</Text>
+                  <Text style={styles.forgot}>
+                    Quên mật khẩu?
+                  </Text>
                 </TouchableOpacity>
               </View>
 
-              {/* Login */}
+              {/* Đăng nhập */}
 
               <TouchableOpacity
                 style={styles.loginButton}
@@ -223,44 +254,72 @@ export default function LoginScreen({ navigation }) {
                 {loading ? (
                   <ActivityIndicator color="#fff" />
                 ) : (
-                  <Text style={styles.loginText}>SIGN IN</Text>
+                  <Text style={styles.loginText}>
+                    ĐĂNG NHẬP
+                  </Text>
                 )}
               </TouchableOpacity>
 
-              {/* Divider */}
+              {/* Phân cách */}
 
               <View style={styles.divider}>
                 <View style={styles.line} />
 
-                <Text style={styles.orText}>OR CONTINUE WITH</Text>
+                <Text style={styles.orText}>
+                  HOẶC TIẾP TỤC VỚI
+                </Text>
 
                 <View style={styles.line} />
               </View>
 
-              {/* Social */}
+              {/* Mạng xã hội */}
 
               <View style={styles.socialContainer}>
-                <TouchableOpacity style={styles.socialButton}>
-                  <Ionicons name="logo-google" size={22} color="#EA4335" />
+                <TouchableOpacity
+                  style={styles.socialButton}
+                >
+                  <Ionicons
+                    name="logo-google"
+                    size={22}
+                    color="#EA4335"
+                  />
 
-                  <Text style={styles.socialText}>Google</Text>
+                  <Text style={styles.socialText}>
+                    Google
+                  </Text>
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.socialButton}>
-                  <Ionicons name="logo-apple" size={22} color="#000" />
+                <TouchableOpacity
+                  style={styles.socialButton}
+                >
+                  <Ionicons
+                    name="logo-apple"
+                    size={22}
+                    color="#000"
+                  />
 
-                  <Text style={styles.socialText}>Apple</Text>
+                  <Text style={styles.socialText}>
+                    Apple
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
 
-            {/* Footer */}
+            {/* Chân trang */}
 
             <View style={styles.footer}>
-              <Text style={styles.footerText}>Don't have an account?</Text>
+              <Text style={styles.footerText}>
+                Chưa có tài khoản?
+              </Text>
 
-              <TouchableOpacity onPress={() => navigation.navigate("Register")}>
-                <Text style={styles.signUp}>Sign Up</Text>
+              <TouchableOpacity
+                onPress={() =>
+                  navigation.navigate("Register")
+                }
+              >
+                <Text style={styles.signUp}>
+                  Đăng ký
+                </Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
@@ -339,7 +398,6 @@ const styles = StyleSheet.create({
     height: 58,
 
     borderWidth: 1,
-
     borderColor: "#E5E7EB",
 
     borderRadius: 16,
