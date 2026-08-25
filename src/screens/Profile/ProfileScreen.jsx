@@ -7,15 +7,98 @@ import {
   StatusBar,
   Pressable,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
+import { useCallback, useState } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 
 import { useAuth } from "../../context/AuthContext";
-import COLORS from "../../constants/colors";
+import api from "../../utils/api";
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();
+
+  // ===============================
+  // THỐNG KÊ PROFILE
+  // ===============================
+
+  const [orderCount, setOrderCount] = useState(0);
+  const [favoriteCount, setFavoriteCount] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
+
+  const [loadingStats, setLoadingStats] = useState(true);
+
+  // ===============================
+  // LẤY THỐNG KÊ
+  // ===============================
+
+  const loadProfileStats = async () => {
+    try {
+      setLoadingStats(true);
+
+      const [ordersResponse, favoritesResponse, reviewsResponse] =
+        await Promise.all([
+          api.get("/orders"),
+          api.get("/favorites"),
+          api.get("/reviews/my/count"),
+        ]);
+
+      // ===============================
+      // ĐƠN HÀNG
+      // GET /api/orders
+      // ===============================
+
+      const orders = ordersResponse?.data?.data || [];
+
+      setOrderCount(orders.length);
+
+      // ===============================
+      // YÊU THÍCH
+      // GET /api/favorites
+      // ===============================
+
+      const favorite = favoritesResponse?.data?.data;
+
+      setFavoriteCount(favorite?.products?.length || 0);
+
+      // ===============================
+      // ĐÁNH GIÁ
+      // GET /api/reviews/my/count
+      // ===============================
+
+      const reviews = reviewsResponse?.data?.data;
+
+      setReviewCount(Number(reviews) || 0);
+    } catch (error) {
+      console.log(
+        "❌ Lỗi lấy thống kê Profile:",
+        error?.response?.data || error.message,
+      );
+
+      // Nếu API lỗi thì không làm app crash
+      setOrderCount(0);
+      setFavoriteCount(0);
+      setReviewCount(0);
+    } finally {
+      setLoadingStats(false);
+    }
+  };
+
+  // ===============================
+  // LOAD LẠI KHI MỞ PROFILE
+  // ===============================
+
+  useFocusEffect(
+    useCallback(() => {
+      loadProfileStats();
+    }, []),
+  );
+
+  // ===============================
+  // MENU
+  // ===============================
 
   const menus = [
     {
@@ -50,6 +133,10 @@ export default function ProfileScreen({ navigation }) {
     },
   ];
 
+  // ===============================
+  // ĐĂNG XUẤT
+  // ===============================
+
   const handleLogout = () => {
     Alert.alert("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất?", [
       {
@@ -69,7 +156,9 @@ export default function ProfileScreen({ navigation }) {
       <StatusBar barStyle="light-content" backgroundColor="#111827" />
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* HEADER */}
+        {/* =========================
+            HEADER
+        ========================= */}
 
         <View style={styles.header}>
           <Text style={styles.headerTitle}>Profile</Text>
@@ -87,40 +176,62 @@ export default function ProfileScreen({ navigation }) {
             </Pressable>
           </View>
 
-          <Text style={styles.name}>{user?.fullName}</Text>
+          <Text style={styles.name}>{user?.fullName || "Người dùng"}</Text>
 
-          <Text style={styles.email}>{user?.email}</Text>
+          <Text style={styles.email}>{user?.email || ""}</Text>
 
           <Text style={styles.member}>Member since July 2026</Text>
         </View>
 
-        {/* STATISTIC */}
+        {/* =========================
+            STATISTIC
+        ========================= */}
 
         <View style={styles.statCard}>
+          {/* ĐƠN HÀNG */}
+
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>12</Text>
+            {loadingStats ? (
+              <ActivityIndicator size="small" color="#111827" />
+            ) : (
+              <Text style={styles.statNumber}>{orderCount}</Text>
+            )}
 
             <Text style={styles.statLabel}>Đơn hàng</Text>
           </View>
 
           <View style={styles.divider} />
 
+          {/* YÊU THÍCH */}
+
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>8</Text>
+            {loadingStats ? (
+              <ActivityIndicator size="small" color="#111827" />
+            ) : (
+              <Text style={styles.statNumber}>{favoriteCount}</Text>
+            )}
 
             <Text style={styles.statLabel}>Yêu thích</Text>
           </View>
 
           <View style={styles.divider} />
 
+          {/* ĐÁNH GIÁ */}
+
           <View style={styles.statItem}>
-            <Text style={styles.statNumber}>5</Text>
+            {loadingStats ? (
+              <ActivityIndicator size="small" color="#111827" />
+            ) : (
+              <Text style={styles.statNumber}>{reviewCount}</Text>
+            )}
 
             <Text style={styles.statLabel}>Đánh giá</Text>
           </View>
         </View>
 
-        {/* MENU */}
+        {/* =========================
+            MENU
+        ========================= */}
 
         <View style={styles.menuCard}>
           {menus.map((item, index) => (
@@ -153,11 +264,15 @@ export default function ProfileScreen({ navigation }) {
           ))}
         </View>
 
-        {/* VERSION */}
+        {/* =========================
+            VERSION
+        ========================= */}
 
         <Text style={styles.version}>Version 1.0.0</Text>
 
-        {/* LOGOUT */}
+        {/* =========================
+            LOGOUT
+        ========================= */}
 
         <Pressable
           onPress={handleLogout}
@@ -185,25 +300,17 @@ const styles = StyleSheet.create({
 
   header: {
     backgroundColor: "#111827",
-
     alignItems: "center",
-
     paddingTop: 20,
-
     paddingBottom: 80,
-
     borderBottomLeftRadius: 35,
-
     borderBottomRightRadius: 35,
   },
 
   headerTitle: {
     color: "#fff",
-
     fontSize: 30,
-
     fontWeight: "700",
-
     marginBottom: 22,
   },
 
@@ -213,91 +320,58 @@ const styles = StyleSheet.create({
 
   avatar: {
     width: 120,
-
     height: 120,
-
     borderRadius: 60,
-
     borderWidth: 4,
-
     borderColor: "#fff",
   },
 
   editAvatar: {
     position: "absolute",
-
     bottom: 0,
-
     right: 0,
-
     width: 36,
-
     height: 36,
-
     borderRadius: 18,
-
     backgroundColor: "#111827",
-
     borderWidth: 3,
-
     borderColor: "#fff",
-
     justifyContent: "center",
-
     alignItems: "center",
   },
 
   name: {
     color: "#fff",
-
     fontSize: 24,
-
     fontWeight: "700",
-
     marginTop: 18,
   },
 
   email: {
     color: "#D1D5DB",
-
     marginTop: 8,
-
     fontSize: 15,
   },
 
   member: {
     color: "#9CA3AF",
-
     marginTop: 6,
-
     fontSize: 14,
   },
 
   statCard: {
     backgroundColor: "#fff",
-
     marginHorizontal: 20,
-
     marginTop: -40,
-
     borderRadius: 22,
-
     flexDirection: "row",
-
     justifyContent: "space-around",
-
     alignItems: "center",
-
     paddingVertical: 22,
-
     elevation: 5,
-
     shadowColor: "#000",
-
     shadowOpacity: 0.08,
-
     shadowRadius: 12,
-
     shadowOffset: {
       width: 0,
       height: 4,
@@ -306,51 +380,38 @@ const styles = StyleSheet.create({
 
   statItem: {
     alignItems: "center",
-
+    justifyContent: "center",
     flex: 1,
+    minHeight: 45,
   },
 
   divider: {
     width: 1,
-
     height: 40,
-
     backgroundColor: "#ECECEC",
   },
 
   statNumber: {
     fontSize: 22,
-
     fontWeight: "700",
-
     color: "#111827",
   },
 
   statLabel: {
     marginTop: 5,
-
     color: "#6B7280",
   },
 
   menuCard: {
     backgroundColor: "#fff",
-
     marginHorizontal: 20,
-
     marginTop: 25,
-
     borderRadius: 22,
-
     overflow: "hidden",
-
     elevation: 4,
-
     shadowColor: "#000",
-
     shadowOpacity: 0.05,
-
     shadowRadius: 10,
-
     shadowOffset: {
       width: 0,
       height: 3,
@@ -359,73 +420,49 @@ const styles = StyleSheet.create({
 
   menuItem: {
     height: 62,
-
     flexDirection: "row",
-
     justifyContent: "space-between",
-
     alignItems: "center",
-
     paddingHorizontal: 20,
-
     borderBottomWidth: 1,
-
     borderBottomColor: "#F2F2F2",
   },
 
   menuLeft: {
     flexDirection: "row",
-
     alignItems: "center",
   },
 
   menuText: {
     marginLeft: 16,
-
     fontSize: 16,
-
     color: "#111827",
-
     fontWeight: "500",
   },
 
   version: {
     textAlign: "center",
-
     color: "#9CA3AF",
-
     marginTop: 30,
-
     marginBottom: 18,
-
     fontSize: 14,
   },
 
   logoutButton: {
     height: 58,
-
     marginHorizontal: 20,
-
     marginBottom: 40,
-
     borderRadius: 18,
-
     backgroundColor: "#111827",
-
     flexDirection: "row",
-
     justifyContent: "center",
-
     alignItems: "center",
   },
 
   logoutText: {
     color: "#fff",
-
     marginLeft: 10,
-
     fontSize: 16,
-
     fontWeight: "700",
   },
 });
