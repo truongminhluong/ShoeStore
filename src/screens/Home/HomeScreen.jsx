@@ -47,6 +47,7 @@ export default function HomeScreen({ navigation }) {
 
   const { favoriteIds, toggleFavorite } = useFavorite();
 
+
   // =========================
   // TỰ ĐỘNG KIỂM TRA THÔNG BÁO
   // =========================
@@ -108,6 +109,19 @@ export default function HomeScreen({ navigation }) {
     setSelectedBrand(null);
   };
 
+  // =========================
+  // TÌM KIẾM SẢN PHẨM
+  // =========================
+
+  const handleSearch = () => {
+    const keyword = searchText.trim();
+
+    navigation.navigate("AllProducts", {
+      searchText: keyword,
+    });
+    setSearchText("");
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView
@@ -131,9 +145,11 @@ export default function HomeScreen({ navigation }) {
           value={searchText}
           onChangeText={setSearchText}
           onClear={() => setSearchText("")}
+          onSearch={handleSearch}
           onFilterPress={clearFilters}
           hasActiveFilters={Boolean(searchText.trim() || selectedBrand)}
         />
+
 
         {/* BANNER */}
 

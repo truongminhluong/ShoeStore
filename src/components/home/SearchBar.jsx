@@ -6,13 +6,14 @@ export default function SearchBar({
   value = "",
   onChangeText,
   onClear,
-  onFilterPress,
+  onSearch,
+  // onFilterPress,
   hasActiveFilters,
 }) {
   return (
     <View style={styles.container}>
       <View style={styles.searchBox}>
-        <Ionicons name="search-outline" size={22} color={COLORS.gray} />
+        {/* <Ionicons name="search-outline" size={22} color={COLORS.gray} /> */}
 
         <TextInput
           placeholder="Search shoes..."
@@ -23,6 +24,9 @@ export default function SearchBar({
           autoCapitalize="none"
           autoCorrect={false}
           returnKeyType="search"
+
+          // Nhấn Enter/Search trên bàn phím
+          onSubmitEditing={onSearch}
         />
 
         {value ? (
@@ -36,20 +40,21 @@ export default function SearchBar({
         ) : null}
       </View>
 
-      {/* <TouchableOpacity
+      <TouchableOpacity
         style={[
           styles.filterButton,
-          hasActiveFilters && styles.activeFilterButton,
+          hasActiveFilters,
         ]}
-        onPress={onFilterPress}
+        onPress={onSearch}
         activeOpacity={0.85}
       >
         <Ionicons
-          name={hasActiveFilters ? "close-outline" : "options-outline"}
-          size={24}
-          color={COLORS.white}
+          name="search-outline"
+          size={21}
+          color="#fbf7f7"
         />
-      </TouchableOpacity> */}
+
+      </TouchableOpacity>
     </View>
   );
 }

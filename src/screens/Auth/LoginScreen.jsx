@@ -86,7 +86,7 @@ export default function LoginScreen({ navigation }) {
     } catch (error) {
       alert(
         error.response?.data?.message ||
-          "Đăng nhập thất bại"
+        "Đăng nhập thất bại"
       );
     } finally {
       setLoading(false);
@@ -112,7 +112,7 @@ export default function LoginScreen({ navigation }) {
             {/* Tiêu đề */}
 
             <View style={styles.header}>
-              <Text style={styles.logo}>RYDE</Text>
+              <Text style={styles.logo}>SHOESTORE</Text>
 
               <Text style={styles.title}>
                 Chào mừng trở lại 👋
