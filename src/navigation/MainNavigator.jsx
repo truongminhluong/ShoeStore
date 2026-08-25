@@ -83,6 +83,8 @@ export default function MainNavigator() {
         }}
       />
 
+      
+
       <Stack.Screen name="Voucher" component={VoucherScreen} />
     </Stack.Navigator>
   );
