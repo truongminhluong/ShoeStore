@@ -112,7 +112,7 @@ export default function LoginScreen({ navigation }) {
             {/* Tiêu đề */}
 
             <View style={styles.header}>
-              <Text style={styles.logo}>SHOESTORE</Text>
+              <Text style={styles.logo}>RYDE</Text>
 
               <Text style={styles.title}>
                 Chào mừng trở lại 👋
