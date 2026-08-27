@@ -15,6 +15,7 @@ import OrderDetailScreen from "../screens/Order/OrderDetailScreen";
 import AllProductsScreen from "../screens/Product/AllProductsScreen";
 import AllProductsByBrandScreen from "../screens/Product/AllProductsByBrandScreen";
 import VoucherScreen from "../screens/Voucher/VoucherScreen";
+import AccountScreen from "../screens/Profile/AccountScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -51,6 +52,8 @@ export default function MainNavigator() {
 
       <Stack.Screen name="Notifications" component={NotificationScreen} />
 
+      <Stack.Screen name="Account" component={AccountScreen} />
+
       <Stack.Screen
         name="CreateReview"
         component={CreateReviewScreen}
@@ -82,8 +85,6 @@ export default function MainNavigator() {
           title: "Sản phẩm theo hãng",
         }}
       />
-
-      
 
       <Stack.Screen name="Voucher" component={VoucherScreen} />
     </Stack.Navigator>
