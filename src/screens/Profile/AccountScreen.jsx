@@ -6,7 +6,6 @@ import {
   Pressable,
   ScrollView,
   StatusBar,
-  ActivityIndicator,
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -23,231 +22,551 @@ export default function AccountScreen({ navigation }) {
   const { user, refreshProfile } = useAuth();
 
   // ==========================================
-  // MỖI LẦN MỞ ACCOUNT
-  // LẤY PROFILE MỚI NHẤT
+  // REFRESH PROFILE MỖI LẦN MỞ ACCOUNT
   // ==========================================
 
   useFocusEffect(
     useCallback(() => {
       refreshProfile();
-    }, []),
+    }, [refreshProfile]),
   );
 
-  // ==========================================
-  // DEBUG
-  // ==========================================
+  const isActive = user?.isActive === true;
 
-  console.log("ACCOUNT USER:", user);
-
-  console.log("ACCOUNT isActive:", user?.isActive);
-
-  console.log("ACCOUNT isActive TYPE:", typeof user?.isActive);
+  const roleLabel =
+    user?.role === "user"
+      ? "Khách hàng"
+      : user?.role || "Khách hàng";
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
-      <StatusBar barStyle="light-content" backgroundColor="#111827" />
+    <SafeAreaView
+      style={styles.safeArea}
+      edges={["top"]}
+    >
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="#FAFAFA"
+      />
 
-      {/* ===================================== */}
-      {/* HEADER */}
-      {/* ===================================== */}
+      <View style={styles.screen}>
 
-      <View style={styles.header}>
-        <Pressable
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
+        {/* ================================================= */}
+        {/* BACKGROUND - SNEAKER */}
+        {/* ================================================= */}
+
+        <Image
+          source={require("../../../assets/images/login-shoe.png")}
+          style={styles.backgroundShoe}
+          resizeMode="contain"
+          pointerEvents="none"
+        />
+
+        {/* ================================================= */}
+        {/* BACKGROUND - DOT PATTERN */}
+        {/* ================================================= */}
+
+        <View
+          style={styles.dotPattern}
+          pointerEvents="none"
         >
-          <Ionicons name="arrow-back" size={24} color="#fff" />
-        </Pressable>
-
-        <Text style={styles.headerTitle}>Tài khoản</Text>
-
-        <View style={styles.headerRight} />
-      </View>
-
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.content}
-      >
-        {/* =================================== */}
-        {/* AVATAR */}
-        {/* =================================== */}
-
-        <View style={styles.avatarSection}>
-          <View style={styles.avatarContainer}>
-            <Image
-              source={{
-                uri: user?.avatar || "https://i.pravatar.cc/300",
-              }}
-              style={styles.avatar}
+          {Array.from({ length: 30 }).map((_, index) => (
+            <View
+              key={index}
+              style={styles.dot}
             />
-
-            <View style={styles.cameraButton}>
-              <Ionicons name="camera" size={18} color="#fff" />
-            </View>
-          </View>
-
-          <Text style={styles.name}>{user?.fullName || "Người dùng"}</Text>
-
-          <Text style={styles.email}>{user?.email || ""}</Text>
+          ))}
         </View>
 
-        {/* =================================== */}
-        {/* THÔNG TIN CÁ NHÂN */}
-        {/* =================================== */}
+        {/* ================================================= */}
+        {/* SUBTLE BOTTOM SHAPE */}
+        {/* ================================================= */}
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Thông tin cá nhân</Text>
+        <View
+          style={styles.bottomShape}
+          pointerEvents="none"
+        />
 
-          {/* HỌ TÊN */}
+        {/* ================================================= */}
+        {/* HEADER */}
+        {/* ================================================= */}
 
-          <View style={styles.infoItem}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="person-outline" size={21} color="#111827" />
-            </View>
+        <View style={styles.header}>
 
-            <View style={styles.infoContent}>
-              <Text style={styles.label}>Họ và tên</Text>
+          <Pressable
+            onPress={() => navigation.goBack()}
+            style={({ pressed }) => [
+              styles.backButton,
+              pressed && styles.pressed,
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel="Quay lại"
+            hitSlop={6}
+          >
+            <Ionicons
+              name="arrow-back"
+              size={24}
+              color="#111827"
+            />
+          </Pressable>
 
-              <Text style={styles.value}>
-                {user?.fullName || "Chưa cập nhật"}
-              </Text>
-            </View>
-          </View>
+          <Text style={styles.headerTitle}>
+            Tài khoản
+          </Text>
 
-          <View style={styles.divider} />
+          <View style={styles.headerSpacer} />
 
-          {/* EMAIL */}
-
-          <View style={styles.infoItem}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="mail-outline" size={21} color="#111827" />
-            </View>
-
-            <View style={styles.infoContent}>
-              <Text style={styles.label}>Email</Text>
-
-              <Text style={styles.value}>{user?.email || "Chưa cập nhật"}</Text>
-            </View>
-          </View>
-
-          <View style={styles.divider} />
-
-          {/* SỐ ĐIỆN THOẠI */}
-
-          <View style={styles.infoItem}>
-            <View style={styles.iconContainer}>
-              <Ionicons name="call-outline" size={21} color="#111827" />
-            </View>
-
-            <View style={styles.infoContent}>
-              <Text style={styles.label}>Số điện thoại</Text>
-
-              <Text style={styles.value}>{user?.phone || "Chưa cập nhật"}</Text>
-            </View>
-          </View>
         </View>
 
-        {/* =================================== */}
-        {/* TRẠNG THÁI TÀI KHOẢN */}
-        {/* =================================== */}
+        {/* ================================================= */}
+        {/* CONTENT */}
+        {/* ================================================= */}
 
-        <View style={styles.card}>
-          <Text style={styles.sectionTitle}>Trạng thái tài khoản</Text>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.content}
+          keyboardShouldPersistTaps="handled"
+        >
 
-          {/* STATUS */}
+          {/* ================================================= */}
+          {/* PROFILE HERO */}
+          {/* ================================================= */}
 
-          <View style={styles.statusRow}>
-            <View style={styles.statusLeft}>
-              <Ionicons
-                name="shield-checkmark-outline"
-                size={22}
-                color="#111827"
+          <View style={styles.profileHero}>
+
+            <View style={styles.avatarContainer}>
+
+              <Image
+                source={{
+                  uri:
+                    user?.avatar ||
+                    "https://i.pravatar.cc/300",
+                }}
+                style={styles.avatar}
+                accessibilityLabel="Ảnh đại diện"
               />
 
-              <Text style={styles.statusText}>Tài khoản</Text>
+              {/* Camera badge */}
+              <View
+                style={styles.cameraButton}
+                accessibilityElementsHidden
+                importantForAccessibility="no"
+              >
+                <Ionicons
+                  name="camera-outline"
+                  size={18}
+                  color="#111827"
+                />
+              </View>
+
             </View>
+
+            <Text
+              style={styles.name}
+              numberOfLines={2}
+            >
+              {user?.fullName || "Người dùng"}
+            </Text>
+
+            <Text
+              style={styles.email}
+              numberOfLines={1}
+            >
+              {user?.email || "Chưa cập nhật email"}
+            </Text>
+
+            {/* ACTIVE BADGE */}
 
             <View
               style={[
-                styles.statusBadge,
-
-                {
-                  backgroundColor:
-                    user?.isActive === true ? "#DCFCE7" : "#FEE2E2",
-                },
+                styles.profileStatus,
+                isActive
+                  ? styles.profileStatusActive
+                  : styles.profileStatusInactive,
               ]}
             >
+              <View
+                style={[
+                  styles.profileStatusDot,
+                  {
+                    backgroundColor: isActive
+                      ? "#16A34A"
+                      : "#DC2626",
+                  },
+                ]}
+              />
+
               <Text
                 style={[
-                  styles.statusBadgeText,
-
+                  styles.profileStatusText,
                   {
-                    color: user?.isActive === true ? "#16A34A" : "#DC2626",
+                    color: isActive
+                      ? "#15803D"
+                      : "#B91C1C",
                   },
                 ]}
               >
-                {user?.isActive === true ? "Đang hoạt động" : "Đã khóa"}
+                {isActive
+                  ? "Đang hoạt động"
+                  : "Đã khóa"}
               </Text>
             </View>
+
           </View>
 
-          <View style={styles.divider} />
+          {/* ================================================= */}
+          {/* PERSONAL INFORMATION */}
+          {/* ================================================= */}
 
-          {/* ROLE */}
+          <View style={styles.section}>
 
-          <View style={styles.statusRow}>
-            <View style={styles.statusLeft}>
-              <Ionicons
-                name="person-circle-outline"
-                size={22}
-                color="#111827"
-              />
+            <Text style={styles.sectionTitle}>
+              Thông tin cá nhân
+            </Text>
 
-              <Text style={styles.statusText}>Loại tài khoản</Text>
+            <View style={styles.accentLine} />
+
+            {/* FULL NAME */}
+
+            <View style={styles.infoRow}>
+
+              <View style={styles.infoIcon}>
+                <Ionicons
+                  name="person-outline"
+                  size={23}
+                  color="#111827"
+                />
+              </View>
+
+              <View style={styles.infoContent}>
+
+                <Text style={styles.label}>
+                  Họ và tên
+                </Text>
+
+                <Text
+                  style={styles.value}
+                  numberOfLines={2}
+                >
+                  {user?.fullName ||
+                    "Chưa cập nhật"}
+                </Text>
+
+              </View>
+
             </View>
 
-            <Text style={styles.roleText}>
-              {user?.role === "user"
-                ? "Khách hàng"
-                : user?.role || "Khách hàng"}
-            </Text>
+            <View style={styles.divider} />
+
+            {/* EMAIL */}
+
+            <View style={styles.infoRow}>
+
+              <View style={styles.infoIcon}>
+                <Ionicons
+                  name="mail-outline"
+                  size={23}
+                  color="#111827"
+                />
+              </View>
+
+              <View style={styles.infoContent}>
+
+                <Text style={styles.label}>
+                  Email
+                </Text>
+
+                <Text
+                  style={styles.value}
+                  numberOfLines={2}
+                >
+                  {user?.email ||
+                    "Chưa cập nhật"}
+                </Text>
+
+              </View>
+
+            </View>
+
+            <View style={styles.divider} />
+
+            {/* PHONE */}
+
+            <View style={styles.infoRow}>
+
+              <View style={styles.infoIcon}>
+                <Ionicons
+                  name="call-outline"
+                  size={23}
+                  color="#111827"
+                />
+              </View>
+
+              <View style={styles.infoContent}>
+
+                <Text style={styles.label}>
+                  Số điện thoại
+                </Text>
+
+                <Text
+                  style={styles.value}
+                  numberOfLines={1}
+                >
+                  {user?.phone ||
+                    "Chưa cập nhật"}
+                </Text>
+
+              </View>
+
+            </View>
+
           </View>
-        </View>
 
-        {/* =================================== */}
-        {/* CHỈNH SỬA */}
-        {/* =================================== */}
+          {/* ================================================= */}
+          {/* ACCOUNT INFORMATION */}
+          {/* ================================================= */}
 
-        <Pressable
-          style={({ pressed }) => [
-            styles.editButton,
+          <View style={styles.section}>
 
-            pressed && {
-              opacity: 0.8,
-            },
-          ]}
-          onPress={() => {
-            // Sau này mở EditProfileScreen
-          }}
-        >
-          <Ionicons name="create-outline" size={21} color="#fff" />
+            <Text style={styles.sectionTitle}>
+              Tài khoản
+            </Text>
 
-          <Text style={styles.editButtonText}>Chỉnh sửa thông tin</Text>
-        </Pressable>
-      </ScrollView>
+            <View style={styles.accentLine} />
+
+            {/* STATUS */}
+
+            <View style={styles.infoRow}>
+
+              <View style={styles.statusIcon}>
+
+                <View
+                  style={[
+                    styles.statusIconOuter,
+                    {
+                      backgroundColor: isActive
+                        ? "#DCFCE7"
+                        : "#FEE2E2",
+                    },
+                  ]}
+                >
+
+                  <View
+                    style={[
+                      styles.statusIconInner,
+                      {
+                        backgroundColor: isActive
+                          ? "#16A34A"
+                          : "#DC2626",
+                      },
+                    ]}
+                  />
+
+                </View>
+
+              </View>
+
+              <View style={styles.infoContent}>
+
+                <Text style={styles.label}>
+                  Trạng thái
+                </Text>
+
+                <Text
+                  style={[
+                    styles.value,
+                    {
+                      color: isActive
+                        ? "#15803D"
+                        : "#B91C1C",
+                      fontWeight: "600",
+                    },
+                  ]}
+                >
+                  {isActive
+                    ? "Đang hoạt động"
+                    : "Đã khóa"}
+                </Text>
+
+              </View>
+
+            </View>
+
+            <View style={styles.divider} />
+
+            {/* ROLE */}
+
+            <View style={styles.infoRow}>
+
+              <View style={styles.infoIcon}>
+                <Ionicons
+                  name="person-circle-outline"
+                  size={25}
+                  color="#111827"
+                />
+              </View>
+
+              <View style={styles.infoContent}>
+
+                <Text style={styles.label}>
+                  Loại tài khoản
+                </Text>
+
+                <Text style={styles.value}>
+                  {roleLabel}
+                </Text>
+
+              </View>
+
+            </View>
+
+          </View>
+
+          {/* ================================================= */}
+          {/* EDIT BUTTON */}
+          {/* ================================================= */}
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.editButton,
+              pressed && styles.editButtonPressed,
+            ]}
+            onPress={() => {
+              // TODO:
+              // navigation.navigate("EditProfile");
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Chỉnh sửa thông tin"
+          >
+
+            <Ionicons
+              name="create-outline"
+              size={21}
+              color="#FFFFFF"
+            />
+
+            <Text style={styles.editButtonText}>
+              CHỈNH SỬA THÔNG TIN
+            </Text>
+
+            <Ionicons
+              name="arrow-forward"
+              size={21}
+              color="#FFFFFF"
+              style={styles.editArrow}
+            />
+
+          </Pressable>
+
+        </ScrollView>
+
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+
+  // =====================================================
+  // BASE
+  // =====================================================
+
+  safeArea: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#FAFAFA",
   },
 
+  screen: {
+    flex: 1,
+    backgroundColor: "#FAFAFA",
+    overflow: "hidden",
+    position: "relative",
+  },
+
+  // =====================================================
+  // BACKGROUND SNEAKER
+  // =====================================================
+
+  backgroundShoe: {
+    position: "absolute",
+
+    width: 330,
+    height: 330,
+
+    right: -85,
+    top: 20,
+
+    opacity: 0.15,
+
+    zIndex: 0,
+  },
+
+  // =====================================================
+  // DOT PATTERN
+  // =====================================================
+
+  dotPattern: {
+    position: "absolute",
+
+    left: 12,
+    top: 72,
+
+    width: 60,
+    height: 70,
+
+    flexDirection: "row",
+    flexWrap: "wrap",
+
+    alignContent: "flex-start",
+
+    zIndex: 0,
+
+    opacity: 0.5,
+  },
+
+  dot: {
+    width: 3,
+    height: 3,
+
+    borderRadius: 2,
+
+    backgroundColor: "#CBD5E1",
+
+    marginRight: 7,
+    marginBottom: 7,
+  },
+
+  // =====================================================
+  // BOTTOM ABSTRACT SHAPE
+  // =====================================================
+
+  bottomShape: {
+    position: "absolute",
+
+    width: 320,
+    height: 130,
+
+    left: -150,
+    bottom: -75,
+
+    borderRadius: 160,
+
+    backgroundColor: "#F1F5F9",
+
+    transform: [
+      {
+        rotate: "-12deg",
+      },
+    ],
+
+    zIndex: 0,
+  },
+
+  // =====================================================
+  // HEADER
+  // =====================================================
+
   header: {
-    height: 65,
-    backgroundColor: "#111827",
+    height: 58,
 
     flexDirection: "row",
 
@@ -256,37 +575,59 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
 
     paddingHorizontal: 20,
+
+    backgroundColor: "transparent",
+
+    zIndex: 5,
   },
 
   backButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
 
-    justifyContent: "center",
     alignItems: "center",
+    justifyContent: "center",
   },
 
-  headerRight: {
-    width: 40,
+  headerSpacer: {
+    width: 44,
+    height: 44,
   },
 
   headerTitle: {
-    color: "#fff",
+    color: "#111827",
 
     fontSize: 20,
 
+    lineHeight: 26,
+
     fontWeight: "700",
+
+    letterSpacing: -0.3,
   },
+
+  // =====================================================
+  // CONTENT
+  // =====================================================
 
   content: {
     paddingHorizontal: 20,
-    paddingBottom: 40,
+
+    paddingBottom: 42,
+
+    zIndex: 2,
   },
 
-  avatarSection: {
+  // =====================================================
+  // PROFILE
+  // =====================================================
+
+  profileHero: {
     alignItems: "center",
 
-    paddingVertical: 30,
+    paddingTop: 18,
+
+    paddingBottom: 30,
   },
 
   avatarContainer: {
@@ -294,207 +635,304 @@ const styles = StyleSheet.create({
   },
 
   avatar: {
-    width: 110,
-    height: 110,
+    width: 112,
+    height: 112,
 
-    borderRadius: 55,
+    borderRadius: 56,
 
     borderWidth: 4,
 
-    borderColor: "#fff",
+    borderColor: "#FFFFFF",
+
+    backgroundColor: "#E5E7EB",
   },
 
   cameraButton: {
     position: "absolute",
 
-    right: 0,
+    right: -1,
     bottom: 0,
 
-    width: 34,
-    height: 34,
+    width: 36,
+    height: 36,
 
-    borderRadius: 17,
-
-    backgroundColor: "#111827",
-
-    borderWidth: 3,
-
-    borderColor: "#fff",
-
-    justifyContent: "center",
+    borderRadius: 18,
 
     alignItems: "center",
+    justifyContent: "center",
+
+    backgroundColor: "#FFFFFF",
+
+    borderWidth: 1,
+
+    borderColor: "#E5E7EB",
+
+    shadowColor: "#000",
+
+    shadowOpacity: 0.08,
+
+    shadowRadius: 6,
+
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+
+    elevation: 2,
   },
 
   name: {
     marginTop: 15,
 
-    fontSize: 22,
-
-    fontWeight: "700",
-
     color: "#111827",
+
+    fontSize: 24,
+
+    lineHeight: 30,
+
+    fontWeight: "800",
+
+    letterSpacing: -0.5,
+
+    textAlign: "center",
+
+    maxWidth: "90%",
   },
 
   email: {
-    marginTop: 5,
+    marginTop: 4,
+
+    color: "#64748B",
 
     fontSize: 14,
 
-    color: "#6B7280",
+    lineHeight: 20,
+
+    textAlign: "center",
+
+    maxWidth: "90%",
   },
 
-  card: {
-    backgroundColor: "#fff",
+  // =====================================================
+  // PROFILE STATUS
+  // =====================================================
 
-    borderRadius: 20,
+  profileStatus: {
+    flexDirection: "row",
 
-    padding: 20,
+    alignItems: "center",
 
-    marginBottom: 18,
+    marginTop: 12,
 
-    elevation: 3,
+    paddingHorizontal: 11,
 
-    shadowColor: "#000",
+    paddingVertical: 6,
 
-    shadowOpacity: 0.05,
+    borderRadius: 999,
+  },
 
-    shadowRadius: 8,
+  profileStatusActive: {
+    backgroundColor: "#F0FDF4",
+  },
 
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
+  profileStatusInactive: {
+    backgroundColor: "#FEF2F2",
+  },
+
+  profileStatusDot: {
+    width: 7,
+    height: 7,
+
+    borderRadius: 4,
+
+    marginRight: 7,
+  },
+
+  profileStatusText: {
+    fontSize: 12,
+
+    lineHeight: 16,
+
+    fontWeight: "600",
+  },
+
+  // =====================================================
+  // SECTIONS
+  // =====================================================
+
+  section: {
+    marginBottom: 28,
   },
 
   sectionTitle: {
+    color: "#111827",
+
     fontSize: 18,
+
+    lineHeight: 24,
 
     fontWeight: "700",
 
-    color: "#111827",
-
-    marginBottom: 18,
+    letterSpacing: -0.25,
   },
 
-  infoItem: {
+  accentLine: {
+    width: 34,
+    height: 3,
+
+    borderRadius: 2,
+
+    backgroundColor: "#2563EB",
+
+    marginTop: 9,
+
+    marginBottom: 15,
+  },
+
+  // =====================================================
+  // INFO ROW
+  // =====================================================
+
+  infoRow: {
+    minHeight: 64,
+
     flexDirection: "row",
 
     alignItems: "center",
   },
 
-  iconContainer: {
-    width: 42,
-    height: 42,
+  infoIcon: {
+    width: 34,
 
-    borderRadius: 12,
-
-    backgroundColor: "#F3F4F6",
+    alignItems: "flex-start",
 
     justifyContent: "center",
 
-    alignItems: "center",
+    marginRight: 10,
   },
 
   infoContent: {
     flex: 1,
 
-    marginLeft: 14,
+    minWidth: 0,
   },
 
   label: {
+    color: "#111827",
+
     fontSize: 13,
 
-    color: "#9CA3AF",
+    lineHeight: 18,
 
-    marginBottom: 4,
+    fontWeight: "500",
+
+    marginBottom: 3,
   },
 
   value: {
-    fontSize: 16,
+    color: "#64748B",
 
-    color: "#111827",
+    fontSize: 15,
 
-    fontWeight: "500",
+    lineHeight: 21,
+
+    fontWeight: "400",
   },
 
   divider: {
     height: 1,
 
-    backgroundColor: "#F0F0F0",
+    backgroundColor: "#E2E8F0",
 
-    marginVertical: 16,
+    marginLeft: 44,
+
+    marginVertical: 2,
   },
 
-  statusRow: {
-    flexDirection: "row",
+  // =====================================================
+  // STATUS
+  // =====================================================
 
-    justifyContent: "space-between",
+  statusIcon: {
+    width: 34,
+
+    alignItems: "flex-start",
+
+    justifyContent: "center",
+
+    marginRight: 10,
+  },
+
+  statusIconOuter: {
+    width: 26,
+    height: 26,
+
+    borderRadius: 13,
 
     alignItems: "center",
+    justifyContent: "center",
   },
 
-  statusLeft: {
-    flexDirection: "row",
+  statusIconInner: {
+    width: 9,
+    height: 9,
 
-    alignItems: "center",
+    borderRadius: 5,
   },
 
-  statusText: {
-    marginLeft: 12,
-
-    fontSize: 15,
-
-    color: "#111827",
-
-    fontWeight: "500",
-  },
-
-  statusBadge: {
-    paddingHorizontal: 10,
-
-    paddingVertical: 6,
-
-    borderRadius: 10,
-  },
-
-  statusBadgeText: {
-    fontSize: 12,
-
-    fontWeight: "600",
-  },
-
-  roleText: {
-    fontSize: 15,
-
-    color: "#6B7280",
-
-    fontWeight: "500",
-  },
+  // =====================================================
+  // EDIT BUTTON
+  // =====================================================
 
   editButton: {
-    height: 56,
+    minHeight: 56,
 
-    borderRadius: 18,
+    borderRadius: 16,
 
     backgroundColor: "#111827",
 
     flexDirection: "row",
 
-    justifyContent: "center",
-
     alignItems: "center",
 
-    marginTop: 2,
+    justifyContent: "center",
+
+    paddingHorizontal: 18,
+
+    marginTop: -2,
+
+    position: "relative",
+  },
+
+  editButtonPressed: {
+    opacity: 0.82,
   },
 
   editButtonText: {
-    color: "#fff",
+    color: "#FFFFFF",
 
-    fontSize: 16,
+    fontSize: 15,
 
-    fontWeight: "700",
+    lineHeight: 20,
 
-    marginLeft: 10,
+    fontWeight: "800",
+
+    letterSpacing: 0.35,
+
+    marginLeft: 9,
+  },
+
+  editArrow: {
+    position: "absolute",
+
+    right: 18,
+  },
+
+  // =====================================================
+  // PRESS STATE
+  // =====================================================
+
+  pressed: {
+    opacity: 0.6,
   },
 });

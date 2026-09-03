@@ -1,3 +1,4 @@
+import React, { useMemo } from "react";
 import {
   View,
   Text,
@@ -8,10 +9,285 @@ import {
 } from "react-native";
 
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
 import { useCart } from "../../context/CartContext";
 import COLORS from "../../constants/colors";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Header from "../../components/home/Header";
+
+// =========================================================
+// ASSET
+// Dùng sneaker watermark giống Login / Account / Order
+// =========================================================
+
+const HEADER_SHOE = require("../../../assets/images/login-shoe.png");
+
+// =========================================================
+// DESIGN TOKENS
+// =========================================================
+
+const UI = {
+  background: "#FAFAF9",
+  surface: "#FFFFFF",
+
+  ink: "#0F1B33",
+  inkSoft: "#334155",
+
+  muted: "#64748B",
+  subtle: "#94A3B8",
+
+  line: "#E7EAF0",
+
+  blue: "#2563EB",
+  blueSoft: "#EFF5FF",
+
+  navy: "#071A3A",
+
+  danger: "#64748B",
+};
+
+// =========================================================
+// FORMAT PRICE
+// =========================================================
+
+const formatPrice = (price = 0) => {
+  return `${Number(price).toLocaleString("vi-VN")}đ`;
+};
+
+// =========================================================
+// HEADER
+// =========================================================
+
+function ScreenHeader({ itemCount, onBack }) {
+  return (
+    <View style={styles.header}>
+      <View style={styles.headerTop}>
+        {/* BACK */}
+        <TouchableOpacity
+          style={styles.headerIconButton}
+          onPress={onBack}
+          activeOpacity={0.75}
+          accessibilityRole="button"
+          accessibilityLabel="Quay lại"
+        >
+          <Ionicons name="arrow-back" size={22} color={UI.ink} />
+        </TouchableOpacity>
+
+        {/* TITLE */}
+        <View style={styles.headerTitleBlock}>
+          <Text style={styles.headerTitle}>Giỏ hàng của bạn</Text>
+
+          <Text style={styles.headerSubtitle}>
+            Quản lý các sản phẩm bạn đã chọn
+          </Text>
+
+          <View style={styles.headerAccent} />
+        </View>
+
+        {/* COUNT */}
+        <View
+          style={styles.headerCount}
+          accessible
+          accessibilityLabel={`${itemCount} sản phẩm trong giỏ hàng`}
+        >
+          <Text style={styles.headerCountText}>{itemCount}</Text>
+        </View>
+      </View>
+
+      {/* SNEAKER WATERMARK */}
+      <Image
+        source={HEADER_SHOE}
+        style={styles.headerShoe}
+        resizeMode="contain"
+        pointerEvents="none"
+      />
+    </View>
+  );
+}
+
+// =========================================================
+// QUANTITY CONTROL
+// =========================================================
+
+function QuantityControl({ item, onDecrease, onIncrease }) {
+  return (
+    <View style={styles.quantityControl}>
+      {/* MINUS */}
+      <TouchableOpacity
+        style={styles.quantityButton}
+        onPress={onDecrease}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`Giảm số lượng ${item.name}`}
+      >
+        <Ionicons name="remove" size={17} color={UI.ink} />
+      </TouchableOpacity>
+
+      {/* NUMBER */}
+      <Text
+        style={styles.quantityText}
+        accessibilityLabel={`Số lượng ${item.quantity}`}
+      >
+        {item.quantity}
+      </Text>
+
+      {/* PLUS */}
+      <TouchableOpacity
+        style={styles.quantityButton}
+        onPress={onIncrease}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`Tăng số lượng ${item.name}`}
+      >
+        <Ionicons name="add" size={17} color={UI.ink} />
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+// =========================================================
+// CART ITEM
+// =========================================================
+
+function CartItem({ item, onRemove, onDecrease, onIncrease }) {
+  const itemTotal = item.price * item.quantity;
+
+  return (
+    <View style={styles.cartItem}>
+      {/* PRODUCT IMAGE */}
+
+      <View style={styles.productImageFrame}>
+        <Image
+          source={{
+            uri: item.image,
+          }}
+          style={styles.productImage}
+          resizeMode="contain"
+          accessibilityLabel={`Ảnh ${item.name}`}
+        />
+      </View>
+
+      {/* PRODUCT INFO */}
+
+      <View style={styles.productInfo}>
+        {/* TOP */}
+
+        <View style={styles.productTopRow}>
+          <View style={styles.productCopy}>
+            <Text style={styles.productName} numberOfLines={2}>
+              {item.name}
+            </Text>
+
+            <Text style={styles.variantText} numberOfLines={1}>
+              {item.colorName} · Size {item.size}
+            </Text>
+          </View>
+
+          {/* DELETE */}
+
+          <TouchableOpacity
+            style={styles.removeButton}
+            onPress={onRemove}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={`Xóa ${item.name} khỏi giỏ hàng`}
+          >
+            <Ionicons name="trash-outline" size={19} color={UI.danger} />
+          </TouchableOpacity>
+        </View>
+
+        {/* BOTTOM */}
+
+        <View style={styles.productBottomRow}>
+          <QuantityControl
+            item={item}
+            onDecrease={onDecrease}
+            onIncrease={onIncrease}
+          />
+
+          <Text style={styles.itemPrice}>{formatPrice(itemTotal)}</Text>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// =========================================================
+// BENEFIT ITEM
+// =========================================================
+
+function Benefit({ icon, title, subtitle }) {
+  return (
+    <View style={styles.benefit}>
+      <View style={styles.benefitIcon}>
+        <Ionicons name={icon} size={18} color={UI.blue} />
+      </View>
+
+      <Text style={styles.benefitTitle}>{title}</Text>
+
+      <Text style={styles.benefitSubtitle}>{subtitle}</Text>
+    </View>
+  );
+}
+
+// =========================================================
+// EMPTY CART
+// =========================================================
+
+function EmptyCart({ navigation, insets }) {
+  return (
+    <View
+      style={[
+        styles.screen,
+        {
+          paddingTop: insets.top,
+        },
+      ]}
+    >
+      <ScreenHeader itemCount={0} onBack={() => navigation.goBack()} />
+
+      <View style={styles.emptyContent}>
+        {/* ICON */}
+
+        <View style={styles.emptyMark}>
+          <Ionicons name="bag-handle-outline" size={34} color={UI.blue} />
+        </View>
+
+        {/* EYEBROW */}
+
+        <Text style={styles.emptyEyebrow}>YOUR CART</Text>
+
+        {/* TITLE */}
+
+        <Text style={styles.emptyTitle}>Giỏ hàng đang trống</Text>
+
+        {/* DESCRIPTION */}
+
+        <Text style={styles.emptyText}>
+          Bạn chưa thêm sản phẩm nào. Khám phá những mẫu giày mới nhất của
+          RydeStore nhé.
+        </Text>
+
+        {/* CTA */}
+
+        <TouchableOpacity
+          activeOpacity={0.85}
+          style={styles.primaryButton}
+          onPress={() => navigation.navigate("Home")}
+          accessibilityRole="button"
+          accessibilityLabel="Tiếp tục mua sắm"
+        >
+          <Text style={styles.primaryButtonText}>Tiếp tục mua sắm</Text>
+
+          <Ionicons name="arrow-forward" size={19} color="#FFFFFF" />
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+}
+
+// =========================================================
+// MAIN SCREEN
+// =========================================================
 
 export default function CartScreen({ navigation }) {
   const insets = useSafeAreaInsets();
@@ -19,303 +295,426 @@ export default function CartScreen({ navigation }) {
   const { cartItems, removeFromCart, increaseQuantity, decreaseQuantity } =
     useCart();
 
-  // =========================
-  // TÍNH TẠM TÍNH
-  // =========================
-  const subtotal = cartItems.reduce(
-    (total, item) => total + item.price * item.quantity,
-    0,
-  );
+  // =========================================================
+  // CALCULATE SUMMARY
+  // =========================================================
 
-  // Phí vận chuyển
-  const shippingFee = cartItems.length > 0 ? 35000 : 0;
-
-  // Thuế VAT 8%
-  const tax = subtotal * 0.08;
-
-  // Tổng tiền
-  const total = subtotal + shippingFee + tax;
-
-  // =========================
-  // FORMAT TIỀN
-  // =========================
-  const formatPrice = (price) => {
-    return `${price.toLocaleString("vi-VN")}đ`;
-  };
-
-  // =========================
-  // ITEM SẢN PHẨM
-  // =========================
-  const renderCartItem = ({ item }) => {
-    return (
-      <View style={styles.cartItem}>
-        {/* ẢNH */}
-        <View style={styles.imageContainer}>
-          <Image
-            source={{
-              uri: item.image,
-            }}
-            style={styles.productImage}
-            resizeMode="cover"
-          />
-        </View>
-
-        {/* THÔNG TIN */}
-        <View style={styles.productInfo}>
-          <View style={styles.nameRow}>
-            <Text style={styles.productName} numberOfLines={1}>
-              {item.name}
-            </Text>
-
-            <TouchableOpacity
-              onPress={() => removeFromCart(item.productId, item.variantId)}
-            >
-              <Ionicons name="trash-outline" size={19} color="#4B5563" />
-            </TouchableOpacity>
-          </View>
-
-          <Text style={styles.variantText}>
-            {item.colorName} • Size: {item.size}
-          </Text>
-
-          {/* SỐ LƯỢNG + GIÁ */}
-          <View style={styles.bottomRow}>
-            <View style={styles.quantityContainer}>
-              <TouchableOpacity
-                onPress={() => decreaseQuantity(item.productId, item.variantId)}
-                style={styles.quantityButton}
-              >
-                <Text style={styles.quantityButtonText}>−</Text>
-              </TouchableOpacity>
-
-              <Text style={styles.quantityText}>{item.quantity}</Text>
-
-              <TouchableOpacity
-                onPress={() => increaseQuantity(item.productId, item.variantId)}
-                style={styles.quantityButton}
-              >
-                <Text style={styles.quantityButtonText}>+</Text>
-              </TouchableOpacity>
-            </View>
-
-            <Text style={styles.itemPrice}>
-              {formatPrice(item.price * item.quantity)}
-            </Text>
-          </View>
-        </View>
-      </View>
+  const summary = useMemo(() => {
+    const subtotal = cartItems.reduce(
+      (sum, item) => sum + item.price * item.quantity,
+      0,
     );
-  };
 
-  // =========================
-  // GIỎ HÀNG TRỐNG
-  // =========================
+    const shippingFee = cartItems.length > 0 ? 35000 : 0;
+
+    const tax = subtotal * 0.08;
+
+    const total = subtotal + shippingFee + tax;
+
+    return {
+      subtotal,
+      shippingFee,
+      tax,
+      total,
+    };
+  }, [cartItems]);
+
+  // =========================================================
+  // EMPTY
+  // =========================================================
+
   if (cartItems.length === 0) {
-    return (
-      <View style={styles.emptyContainer}>
-        <View style={styles.iconWrapper}>
-          <Ionicons name="cart-outline" size={60} color={COLORS.primary} />
-        </View>
-
-        <Text style={styles.emptyTitle}>Giỏ hàng của bạn đang trống</Text>
-
-        <Text style={styles.emptyText}>
-          Có vẻ bạn chưa thêm sản phẩm nào vào giỏ hàng.
-          {"\n"}
-          Hãy khám phá những mẫu giày mới nhất nhé!
-        </Text>
-
-        <TouchableOpacity
-          activeOpacity={0.8}
-          style={styles.continueButton}
-          onPress={() => navigation.navigate("Home")}
-        >
-          <Ionicons
-            name="bag-handle-outline"
-            size={20}
-            color="#fff"
-            style={{ marginRight: 8 }}
-          />
-
-          <Text style={styles.continueButtonText}>Tiếp tục mua sắm</Text>
-        </TouchableOpacity>
-      </View>
-    );
+    return <EmptyCart navigation={navigation} insets={insets} />;
   }
+
+  // =========================================================
+  // RENDER ITEM
+  // =========================================================
+
+  const renderItem = ({ item }) => {
+    return (
+      <CartItem
+        item={item}
+        onRemove={() => removeFromCart(item.productId, item.variantId)}
+        onDecrease={() => decreaseQuantity(item.productId, item.variantId)}
+        onIncrease={() => increaseQuantity(item.productId, item.variantId)}
+      />
+    );
+  };
+
+  // =========================================================
+  // MAIN
+  // =========================================================
 
   return (
     <View
       style={[
-        styles.container,
+        styles.screen,
         {
           paddingTop: insets.top,
         },
       ]}
     >
       {/* HEADER */}
-      <Header />
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Giỏ hàng của bạn</Text>
 
-        <Text style={styles.productCount}>{cartItems.length} sản phẩm</Text>
-      </View>
+      <ScreenHeader
+        itemCount={cartItems.length}
+        onBack={() => navigation.goBack()}
+      />
+
+      {/* LIST */}
 
       <FlatList
         data={cartItems}
-        keyExtractor={(item) => item.variantId}
-        renderItem={renderCartItem}
+        keyExtractor={(item) => `${item.productId}-${item.variantId}`}
+        renderItem={renderItem}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.listContent}
+        contentContainerStyle={[
+          styles.listContent,
+          {
+            paddingBottom: Math.max(insets.bottom, 24) + 16,
+          },
+        ]}
+        // =====================================================
+        // LIST HEADER
+        // =====================================================
+
+        ListHeaderComponent={
+          <View style={styles.listIntro}>
+            <Text style={styles.sectionEyebrow}>ĐÃ CHỌN</Text>
+
+            <Text style={styles.sectionTitle}>
+              {cartItems.length} sản phẩm trong giỏ
+            </Text>
+          </View>
+        }
+        // =====================================================
+        // FOOTER
+        // =====================================================
+
         ListFooterComponent={
-          <>
-            {/* TÓM TẮT ĐƠN HÀNG */}
+          <View>
+            {/* =================================================
+                SUMMARY
+            ================================================= */}
+
             <View style={styles.summaryContainer}>
-              <Text style={styles.summaryTitle}>Tóm tắt đơn hàng</Text>
+              {/* SUMMARY HEADER */}
 
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Tạm tính</Text>
+              <View style={styles.summaryHeader}>
+                <View>
+                  <Text style={styles.sectionEyebrow}>CHECKOUT</Text>
 
-                <Text style={styles.summaryValue}>{formatPrice(subtotal)}</Text>
+                  <Text style={styles.summaryTitle}>Tóm tắt đơn hàng</Text>
+                </View>
+
+                {/* SECURE */}
+
+                <View style={styles.secureBadge}>
+                  <Ionicons
+                    name="shield-checkmark-outline"
+                    size={15}
+                    color={UI.blue}
+                  />
+
+                  <Text style={styles.secureBadgeText}>An toàn</Text>
+                </View>
               </View>
 
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Phí vận chuyển</Text>
+              {/* SUMMARY ROWS */}
 
-                <Text style={styles.summaryValue}>
-                  {formatPrice(shippingFee)}
+              <View style={styles.summaryRows}>
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Tạm tính</Text>
+
+                  <Text style={styles.summaryValue}>
+                    {formatPrice(summary.subtotal)}
+                  </Text>
+                </View>
+
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Phí vận chuyển</Text>
+
+                  <Text style={styles.summaryValue}>
+                    {formatPrice(summary.shippingFee)}
+                  </Text>
+                </View>
+
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Thuế VAT (8%)</Text>
+
+                  <Text style={styles.summaryValue}>
+                    {formatPrice(summary.tax)}
+                  </Text>
+                </View>
+              </View>
+
+              {/* DIVIDER */}
+
+              <View style={styles.totalDivider} />
+
+              {/* TOTAL */}
+
+              <View style={styles.totalRow}>
+                <View>
+                  <Text style={styles.totalLabel}>Tổng cộng</Text>
+
+                  <Text style={styles.totalHint}>Đã bao gồm VAT</Text>
+                </View>
+
+                <Text style={styles.totalValue}>
+                  {formatPrice(summary.total)}
                 </Text>
               </View>
 
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Thuế (VAT 8%)</Text>
+              {/* PAYMENT */}
 
-                <Text style={styles.summaryValue}>{formatPrice(tax)}</Text>
-              </View>
-
-              <View style={styles.divider} />
-
-              <View style={styles.totalRow}>
-                <Text style={styles.totalLabel}>Tổng cộng</Text>
-
-                <Text style={styles.totalValue}>{formatPrice(total)}</Text>
-              </View>
-
-              {/* THANH TOÁN */}
               <TouchableOpacity
                 style={styles.paymentButton}
-                onPress={() => {
-                  navigation.navigate("Checkout");
-                }}
+                onPress={() => navigation.navigate("Checkout")}
+                activeOpacity={0.86}
+                accessibilityRole="button"
+                accessibilityLabel={`Thanh toán ${formatPrice(summary.total)}`}
               >
                 <Text style={styles.paymentText}>Thanh toán ngay</Text>
 
                 <Ionicons name="arrow-forward" size={20} color="#FFFFFF" />
               </TouchableOpacity>
 
-              {/* CHÍNH SÁCH */}
-              <View style={styles.policyContainer}>
-                <View style={styles.policyItem}>
-                  <Ionicons
-                    name="shield-checkmark-outline"
-                    size={26}
-                    color={COLORS.primary}
-                  />
+              {/* NOTE */}
 
-                  <Text style={styles.policyText}>Chính hãng{"\n"}100%</Text>
-                </View>
-
-                <View style={styles.policyItem}>
-                  <Ionicons
-                    name="car-outline"
-                    size={26}
-                    color={COLORS.primary}
-                  />
-
-                  <Text style={styles.policyText}>Giao hàng 24h</Text>
-                </View>
-
-                <View style={styles.policyItem}>
-                  <Ionicons
-                    name="refresh-outline"
-                    size={26}
-                    color={COLORS.primary}
-                  />
-
-                  <Text style={styles.policyText}>30 ngày đổi trả</Text>
-                </View>
-              </View>
+              <Text style={styles.checkoutNote}>
+                Bạn có thể kiểm tra lại địa chỉ và phương thức thanh toán ở bước
+                tiếp theo.
+              </Text>
             </View>
-          </>
+
+            {/* =================================================
+                BENEFITS
+            ================================================= */}
+
+            <View style={styles.benefits}>
+              <Benefit
+                icon="shield-checkmark-outline"
+                title="Chính hãng"
+                subtitle="100% cam kết"
+              />
+
+              <Benefit
+                icon="car-outline"
+                title="Giao hàng"
+                subtitle="Toàn quốc"
+              />
+
+              <Benefit
+                icon="refresh-outline"
+                title="Đổi trả"
+                subtitle="Trong 30 ngày"
+              />
+            </View>
+          </View>
         }
       />
     </View>
   );
 }
 
+// =========================================================
+// STYLES
+// =========================================================
+
 const styles = StyleSheet.create({
-  container: {
+  // =========================================================
+  // SCREEN
+  // =========================================================
+
+  screen: {
     flex: 1,
-    backgroundColor: "#F8F7FF",
+    backgroundColor: UI.background,
   },
 
-  // =========================
+  // =========================================================
   // HEADER
-  // =========================
+  // =========================================================
+
   header: {
+    position: "relative",
+    minHeight: 138,
+    overflow: "hidden",
+
     paddingHorizontal: 20,
-    paddingTop: 18,
-    paddingBottom: 16,
+    paddingTop: 8,
+    paddingBottom: 10,
+  },
+
+  headerTop: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    alignItems: "flex-start",
+    minHeight: 112,
+  },
+
+  headerIconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+
+    backgroundColor: UI.surface,
+
+    borderWidth: 1,
+    borderColor: UI.line,
+
+    justifyContent: "center",
     alignItems: "center",
+
+    zIndex: 3,
+  },
+
+  headerTitleBlock: {
+    flex: 1,
+
+    marginLeft: 14,
+    paddingTop: 2,
+
+    zIndex: 2,
   },
 
   headerTitle: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#1F2937",
+    color: UI.ink,
+
+    fontSize: 29,
+    lineHeight: 35,
+
+    fontWeight: "800",
+
+    letterSpacing: -0.7,
   },
 
-  productCount: {
-    fontSize: 13,
-    color: "#6B7280",
+  headerSubtitle: {
+    color: UI.muted,
+
+    fontSize: 14,
+    lineHeight: 20,
+
+    marginTop: 3,
+
+    maxWidth: 245,
   },
 
-  // =========================
-  // DANH SÁCH GIỎ HÀNG
-  // =========================
+  headerAccent: {
+    width: 32,
+    height: 3,
+
+    borderRadius: 2,
+
+    backgroundColor: UI.blue,
+
+    marginTop: 12,
+  },
+
+  headerCount: {
+    minWidth: 40,
+    height: 40,
+
+    paddingHorizontal: 11,
+
+    borderRadius: 20,
+
+    backgroundColor: UI.blueSoft,
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    zIndex: 3,
+  },
+
+  headerCountText: {
+    color: UI.blue,
+
+    fontSize: 14,
+
+    fontWeight: "800",
+  },
+
+  headerShoe: {
+    position: "absolute",
+
+    width: 220,
+    height: 145,
+
+    right: -30,
+    top: 38,
+
+    opacity: 0.1,
+
+    zIndex: 1,
+  },
+
+  // =========================================================
+  // LIST
+  // =========================================================
+
   listContent: {
     paddingHorizontal: 16,
-    paddingBottom: 40,
   },
 
-  // =========================
+  listIntro: {
+    paddingHorizontal: 4,
+    paddingBottom: 14,
+  },
+
+  sectionEyebrow: {
+    color: UI.blue,
+
+    fontSize: 10,
+    lineHeight: 14,
+
+    fontWeight: "800",
+
+    letterSpacing: 1.2,
+  },
+
+  sectionTitle: {
+    color: UI.ink,
+
+    fontSize: 18,
+    lineHeight: 24,
+
+    fontWeight: "700",
+
+    marginTop: 2,
+  },
+
+  // =========================================================
   // CART ITEM
-  // =========================
+  // =========================================================
+
   cartItem: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 14,
-    padding: 14,
-    marginBottom: 14,
     flexDirection: "row",
 
-    // làm card nổi nhẹ
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
+    backgroundColor: UI.surface,
+
+    borderWidth: 1,
+    borderColor: UI.line,
+
+    borderRadius: 20,
+
+    padding: 12,
+
+    marginBottom: 12,
   },
 
-  imageContainer: {
-    width: 105,
-    height: 105,
-    backgroundColor: "#F3F4F6",
-    borderRadius: 10,
+  productImageFrame: {
+    width: 106,
+    height: 106,
+
+    borderRadius: 15,
+
+    backgroundColor: "#F6F7F9",
+
     overflow: "hidden",
+
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   productImage: {
@@ -325,255 +724,481 @@ const styles = StyleSheet.create({
 
   productInfo: {
     flex: 1,
+
+    minWidth: 0,
+
     marginLeft: 14,
+
     justifyContent: "space-between",
+
+    paddingVertical: 1,
   },
 
-  nameRow: {
+  productTopRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "flex-start",
   },
 
-  productName: {
+  productCopy: {
     flex: 1,
-    fontSize: 16,
+    minWidth: 0,
+  },
+
+  productName: {
+    color: UI.ink,
+
+    fontSize: 15,
+    lineHeight: 20,
+
     fontWeight: "700",
-    color: "#1F2937",
-    marginRight: 10,
+
+    paddingRight: 4,
   },
 
   variantText: {
+    color: UI.muted,
+
     fontSize: 12,
-    color: "#6B7280",
-    marginTop: 6,
+    lineHeight: 18,
+
+    marginTop: 5,
   },
 
-  bottomRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 14,
-  },
+  // =========================================================
+  // DELETE
+  // =========================================================
 
-  // =========================
-  // SỐ LƯỢNG
-  // =========================
-  quantityContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#EEF2FF",
-    borderRadius: 10,
-    paddingHorizontal: 5,
-    height: 34,
-  },
+  removeButton: {
+    width: 44,
+    height: 44,
 
-  quantityButton: {
-    width: 30,
-    height: 30,
+    marginTop: -5,
+    marginRight: -5,
+
     justifyContent: "center",
     alignItems: "center",
   },
 
-  quantityButtonText: {
-    fontSize: 18,
-    color: COLORS.primary,
-    fontWeight: "600",
+  // =========================================================
+  // BOTTOM PRODUCT ROW
+  // =========================================================
+
+  productBottomRow: {
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    justifyContent: "space-between",
+
+    marginTop: 12,
+  },
+
+  // =========================================================
+  // QUANTITY
+  // =========================================================
+
+  quantityControl: {
+    height: 44,
+
+    minWidth: 118,
+
+    borderWidth: 1,
+    borderColor: UI.line,
+
+    borderRadius: 14,
+
+    backgroundColor: UI.surface,
+
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    justifyContent: "space-between",
+
+    paddingHorizontal: 2,
+  },
+
+  quantityButton: {
+    width: 40,
+    height: 40,
+
+    borderRadius: 12,
+
+    justifyContent: "center",
+    alignItems: "center",
   },
 
   quantityText: {
     minWidth: 28,
+
     textAlign: "center",
+
+    color: UI.ink,
+
     fontSize: 14,
-    fontWeight: "600",
-    color: "#1F2937",
+
+    fontWeight: "700",
   },
 
   itemPrice: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: COLORS.primary,
+    color: UI.blue,
+
+    fontSize: 14,
+    lineHeight: 19,
+
+    fontWeight: "800",
+
+    marginLeft: 8,
   },
 
-  // =========================
-  // TÓM TẮT ĐƠN HÀNG
-  // =========================
-  summaryContainer: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 14,
-    padding: 20,
-    marginTop: 8,
+  // =========================================================
+  // SUMMARY
+  // =========================================================
 
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    elevation: 2,
+  summaryContainer: {
+    backgroundColor: UI.surface,
+
+    borderWidth: 1,
+    borderColor: UI.line,
+
+    borderRadius: 22,
+
+    padding: 20,
+
+    marginTop: 8,
+  },
+
+  summaryHeader: {
+    flexDirection: "row",
+
+    justifyContent: "space-between",
+
+    alignItems: "flex-start",
   },
 
   summaryTitle: {
+    color: UI.ink,
+
     fontSize: 20,
+    lineHeight: 26,
+
+    fontWeight: "800",
+
+    marginTop: 2,
+  },
+
+  secureBadge: {
+    flexDirection: "row",
+
+    alignItems: "center",
+
+    backgroundColor: UI.blueSoft,
+
+    borderRadius: 20,
+
+    paddingHorizontal: 10,
+
+    height: 30,
+
+    marginLeft: 10,
+  },
+
+  secureBadgeText: {
+    color: UI.blue,
+
+    fontSize: 11,
+
     fontWeight: "700",
-    color: "#1F2937",
-    marginBottom: 20,
+
+    marginLeft: 4,
+  },
+
+  summaryRows: {
+    marginTop: 22,
   },
 
   summaryRow: {
     flexDirection: "row",
+
     justifyContent: "space-between",
+
+    alignItems: "center",
+
     marginBottom: 14,
   },
 
   summaryLabel: {
-    fontSize: 14,
-    color: "#6B7280",
+    color: UI.muted,
+
+    fontSize: 13,
+
+    lineHeight: 19,
   },
 
   summaryValue: {
-    fontSize: 14,
-    color: "#4B5563",
-    fontWeight: "500",
+    color: UI.inkSoft,
+
+    fontSize: 13,
+
+    lineHeight: 19,
+
+    fontWeight: "600",
   },
 
-  divider: {
+  totalDivider: {
     height: 1,
-    backgroundColor: "#E5E7EB",
-    marginVertical: 8,
+
+    backgroundColor: UI.line,
+
+    marginTop: 1,
+
+    marginBottom: 17,
   },
 
   totalRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+
     alignItems: "center",
-    marginBottom: 20,
+
+    justifyContent: "space-between",
+
+    marginBottom: 18,
   },
 
   totalLabel: {
-    fontSize: 19,
-    fontWeight: "700",
-    color: "#1F2937",
+    color: UI.ink,
+
+    fontSize: 16,
+    lineHeight: 21,
+
+    fontWeight: "800",
+  },
+
+  totalHint: {
+    color: UI.subtle,
+
+    fontSize: 11,
+    lineHeight: 16,
+
+    marginTop: 2,
   },
 
   totalValue: {
+    color: UI.blue,
+
     fontSize: 20,
-    fontWeight: "700",
-    color: "#D93816",
+    lineHeight: 26,
+
+    fontWeight: "800",
+
+    letterSpacing: -0.3,
   },
 
-  // =========================
-  // BUTTON THANH TOÁN
-  // =========================
+  // =========================================================
+  // PAYMENT BUTTON
+  // =========================================================
+
   paymentButton: {
-    height: 50,
-    borderRadius: 8,
-    backgroundColor: COLORS.primary,
+    minHeight: 54,
+
+    borderRadius: 15,
+
+    backgroundColor: UI.navy,
+
     flexDirection: "row",
-    justifyContent: "center",
+
     alignItems: "center",
-    gap: 8,
+
+    justifyContent: "center",
+
+    paddingHorizontal: 18,
+
+    gap: 9,
   },
 
   paymentText: {
     color: "#FFFFFF",
+
     fontSize: 15,
-    fontWeight: "700",
+    lineHeight: 20,
+
+    fontWeight: "800",
   },
 
-  continueButton: {
-    height: 50,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: COLORS.primary,
-    justifyContent: "center",
-    alignItems: "center",
-    marginTop: 12,
-  },
+  checkoutNote: {
+    color: UI.subtle,
 
-  continueButtonText: {
-    color: COLORS.primary,
-    fontSize: 15,
-    fontWeight: "600",
-  },
-
-  // =========================
-  // CHÍNH SÁCH
-  // =========================
-  policyContainer: {
-    borderTopWidth: 1,
-    borderTopColor: "#F1F1F1",
-    marginTop: 20,
-    paddingTop: 18,
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-
-  policyItem: {
-    flex: 1,
-    alignItems: "center",
-    gap: 8,
-  },
-
-  policyText: {
     textAlign: "center",
-    fontSize: 12,
-    lineHeight: 17,
-    color: "#4B5563",
-    fontWeight: "500",
+
+    fontSize: 11,
+    lineHeight: 16,
+
+    marginTop: 12,
+
+    paddingHorizontal: 8,
   },
 
-  // =========================
-  // GIỎ HÀNG TRỐNG
-  // =========================
-  emptyContainer: {
+  // =========================================================
+  // BENEFITS
+  // =========================================================
+
+  benefits: {
+    flexDirection: "row",
+
+    backgroundColor: UI.surface,
+
+    borderWidth: 1,
+    borderColor: UI.line,
+
+    borderRadius: 20,
+
+    paddingVertical: 16,
+    paddingHorizontal: 8,
+
+    marginTop: 12,
+    marginBottom: 8,
+  },
+
+  benefit: {
     flex: 1,
-    justifyContent: "center",
+
     alignItems: "center",
-    paddingHorizontal: 30,
-    backgroundColor: "#F8FAFC",
+
+    paddingHorizontal: 3,
   },
 
-  iconWrapper: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: "#EEF2FF",
+  benefitIcon: {
+    width: 36,
+    height: 36,
+
+    borderRadius: 18,
+
+    backgroundColor: UI.blueSoft,
+
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 28,
+
+    marginBottom: 7,
+  },
+
+  benefitTitle: {
+    color: UI.ink,
+
+    fontSize: 10,
+    lineHeight: 14,
+
+    fontWeight: "800",
+
+    textAlign: "center",
+  },
+
+  benefitSubtitle: {
+    color: UI.subtle,
+
+    fontSize: 9,
+    lineHeight: 13,
+
+    textAlign: "center",
+
+    marginTop: 1,
+  },
+
+  // =========================================================
+  // EMPTY CART
+  // =========================================================
+
+  emptyContent: {
+    flex: 1,
+
+    alignItems: "center",
+
+    justifyContent: "center",
+
+    paddingHorizontal: 34,
+
+    paddingBottom: 50,
+  },
+
+  emptyMark: {
+    width: 82,
+    height: 82,
+
+    borderRadius: 41,
+
+    backgroundColor: UI.blueSoft,
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    marginBottom: 20,
+  },
+
+  emptyEyebrow: {
+    color: UI.blue,
+
+    fontSize: 10,
+
+    fontWeight: "800",
+
+    letterSpacing: 1.5,
+
+    marginBottom: 5,
   },
 
   emptyTitle: {
+    color: UI.ink,
+
     fontSize: 24,
-    fontWeight: "700",
-    color: "#111827",
-    marginBottom: 12,
+    lineHeight: 31,
+
+    fontWeight: "800",
+
+    letterSpacing: -0.5,
+
+    textAlign: "center",
   },
 
   emptyText: {
-    fontSize: 15,
-    color: "#6B7280",
+    color: UI.muted,
+
+    fontSize: 14,
+    lineHeight: 22,
+
     textAlign: "center",
-    lineHeight: 24,
+
+    marginTop: 11,
+
+    maxWidth: 330,
+  },
+
+  primaryButton: {
+    minHeight: 54,
+
+    width: "100%",
+
+    borderRadius: 15,
+
+    backgroundColor: UI.navy,
+
+    flexDirection: "row",
+
+    justifyContent: "center",
+
+    alignItems: "center",
+
+    gap: 9,
+
+    marginTop: 26,
+
     paddingHorizontal: 20,
   },
 
-  continueButton: {
-    marginTop: 35,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: COLORS.primary,
-    paddingVertical: 15,
-    paddingHorizontal: 35,
-    borderRadius: 30,
-  },
+  primaryButtonText: {
+    color: "#FFFFFF",
 
-  continueButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
+    fontSize: 15,
+    lineHeight: 20,
+
+    fontWeight: "800",
   },
 });

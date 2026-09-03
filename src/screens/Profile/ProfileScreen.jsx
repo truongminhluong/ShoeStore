@@ -9,20 +9,23 @@ import {
   Alert,
   ActivityIndicator,
 } from "react-native";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
+
 import { useCallback, useState } from "react";
 import { useFocusEffect } from "@react-navigation/native";
 
 import { useAuth } from "../../context/AuthContext";
 import api from "../../utils/api";
+import COLORS from "../../constants/colors";
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();
 
-  // ===============================
-  // THỐNG KÊ PROFILE
-  // ===============================
+  // =========================================================
+  // PROFILE STATS
+  // =========================================================
 
   const [orderCount, setOrderCount] = useState(0);
   const [favoriteCount, setFavoriteCount] = useState(0);
@@ -30,9 +33,9 @@ export default function ProfileScreen({ navigation }) {
 
   const [loadingStats, setLoadingStats] = useState(true);
 
-  // ===============================
-  // LẤY THỐNG KÊ
-  // ===============================
+  // =========================================================
+  // LOAD PROFILE STATS
+  // =========================================================
 
   const loadProfileStats = async () => {
     try {
@@ -45,28 +48,25 @@ export default function ProfileScreen({ navigation }) {
           api.get("/reviews/my/count"),
         ]);
 
-      // ===============================
-      // ĐƠN HÀNG
-      // GET /api/orders
-      // ===============================
+      // -----------------------------------------------------
+      // ORDERS
+      // -----------------------------------------------------
 
       const orders = ordersResponse?.data?.data || [];
 
       setOrderCount(orders.length);
 
-      // ===============================
-      // YÊU THÍCH
-      // GET /api/favorites
-      // ===============================
+      // -----------------------------------------------------
+      // FAVORITES
+      // -----------------------------------------------------
 
       const favorite = favoritesResponse?.data?.data;
 
       setFavoriteCount(favorite?.products?.length || 0);
 
-      // ===============================
-      // ĐÁNH GIÁ
-      // GET /api/reviews/my/count
-      // ===============================
+      // -----------------------------------------------------
+      // REVIEWS
+      // -----------------------------------------------------
 
       const reviews = reviewsResponse?.data?.data;
 
@@ -74,10 +74,9 @@ export default function ProfileScreen({ navigation }) {
     } catch (error) {
       console.log(
         "❌ Lỗi lấy thống kê Profile:",
-        error?.response?.data || error.message,
+        error?.response?.data || error?.message,
       );
 
-      // Nếu API lỗi thì không làm app crash
       setOrderCount(0);
       setFavoriteCount(0);
       setReviewCount(0);
@@ -86,9 +85,9 @@ export default function ProfileScreen({ navigation }) {
     }
   };
 
-  // ===============================
-  // LOAD LẠI KHI MỞ PROFILE
-  // ===============================
+  // =========================================================
+  // RELOAD WHEN SCREEN FOCUS
+  // =========================================================
 
   useFocusEffect(
     useCallback(() => {
@@ -96,46 +95,49 @@ export default function ProfileScreen({ navigation }) {
     }, []),
   );
 
-  // ===============================
-  // MENU
-  // ===============================
+  // =========================================================
+  // MENU DATA
+  // =========================================================
 
-  const menus = [
+  const accountMenus = [
     {
-      title: "Tài khoản",
+      title: "Tài khoản của tôi",
       icon: "person-outline",
       screen: "Account",
     },
     {
-      title: "Đơn hàng",
+      title: "Đơn hàng của tôi",
       icon: "bag-handle-outline",
       screen: "Orders",
     },
     {
-      title: "Địa chỉ",
+      title: "Sổ địa chỉ",
       icon: "location-outline",
       screen: "Address",
     },
     {
-      title: "Yêu thích",
+      title: "Danh sách yêu thích",
       icon: "heart-outline",
       screen: "Wishlist",
     },
+  ];
+
+  const otherMenus = [
     {
       title: "Cài đặt",
       icon: "settings-outline",
       screen: "Settings",
     },
     {
-      title: "Trợ giúp",
-      icon: "help-circle-outline",
+      title: "Trợ giúp & Hỗ trợ",
+      icon: "headset-outline",
       screen: "Help",
     },
   ];
 
-  // ===============================
-  // ĐĂNG XUẤT
-  // ===============================
+  // =========================================================
+  // LOGOUT
+  // =========================================================
 
   const handleLogout = () => {
     Alert.alert("Đăng xuất", "Bạn có chắc chắn muốn đăng xuất?", [
@@ -151,318 +153,752 @@ export default function ProfileScreen({ navigation }) {
     ]);
   };
 
+  // =========================================================
+  // AVATAR
+  // =========================================================
+
+  const avatarUri = user?.avatar || "https://i.pravatar.cc/300";
+
+  // =========================================================
+  // RENDER STAT
+  // =========================================================
+
+  const renderStat = (icon, number, label, description) => {
+    return (
+      <View style={styles.statItem}>
+        <Ionicons
+          name={icon}
+          size={29}
+          color="#101828"
+          style={styles.statIcon}
+        />
+
+        {loadingStats ? (
+          <ActivityIndicator
+            size="small"
+            color="#101828"
+            style={styles.loading}
+          />
+        ) : (
+          <Text style={styles.statNumber}>
+            {String(number).padStart(2, "0")}
+          </Text>
+        )}
+
+        <Text style={styles.statLabel}>{label}</Text>
+
+        <Text style={styles.statDescription}>{description}</Text>
+      </View>
+    );
+  };
+
+  // =========================================================
+  // RENDER MENU
+  // =========================================================
+
+  const renderMenu = (items) => {
+    return (
+      <View style={styles.menuContainer}>
+        {items.map((item, index) => (
+          <Pressable
+            key={item.title}
+            onPress={() => {
+              navigation.navigate(item.screen);
+            }}
+            android_ripple={{
+              color: "#F1F3F5",
+            }}
+            style={({ pressed }) => [
+              styles.menuItem,
+
+              index === items.length - 1 && styles.menuItemLast,
+
+              pressed && styles.menuItemPressed,
+            ]}
+          >
+            <View style={styles.menuLeft}>
+              <Ionicons name={item.icon} size={25} color="#344054" />
+
+              <Text style={styles.menuText}>{item.title}</Text>
+            </View>
+
+            <Ionicons name="chevron-forward" size={22} color="#667085" />
+          </Pressable>
+        ))}
+      </View>
+    );
+  };
+
+  // =========================================================
+  // UI
+  // =========================================================
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <StatusBar barStyle="light-content" backgroundColor="#111827" />
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
 
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* =========================
-            HEADER
-        ========================= */}
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        {/* =================================================
+            BACKGROUND DECORATION
+        ================================================= */}
 
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Profile</Text>
+        <View pointerEvents="none" style={styles.backgroundDecor}>
+          {/* Dots */}
 
-          <View style={styles.avatarContainer}>
+          <View style={styles.dotPattern}>
+            {Array.from({ length: 36 }).map((_, index) => (
+              <View key={index} style={styles.dot} />
+            ))}
+          </View>
+
+          {/* Sneaker */}
+
+          <Image
+            source={require("../../../assets/images/login-shoe.png")}
+            resizeMode="contain"
+            style={styles.shoeImage}
+          />
+        </View>
+
+        {/* =================================================
+            TOP HEADER
+        ================================================= */}
+
+        <View style={styles.topHeader}>
+          <View>
+            <Text style={styles.headerTitle}>PROFILE</Text>
+
+            <View style={styles.headerAccent} />
+          </View>
+
+          <Pressable
+            style={({ pressed }) => [
+              styles.settingsButton,
+              pressed && styles.settingsPressed,
+            ]}
+            onPress={() => navigation.navigate("Settings")}
+          >
+            <Ionicons name="settings-outline" size={27} color="#101828" />
+          </Pressable>
+        </View>
+
+        {/* =================================================
+            MEMBER LABEL
+        ================================================= */}
+
+        <Text style={styles.memberLabel}>RYDE MEMBER</Text>
+
+        {/* =================================================
+            PROFILE INFO
+        ================================================= */}
+
+        <Pressable
+          onPress={() => navigation.navigate("Account")}
+          style={({ pressed }) => [
+            styles.profileInfo,
+            pressed && styles.profilePressed,
+          ]}
+        >
+          <View style={styles.avatarWrapper}>
             <Image
               source={{
-                uri: user?.avatar || "https://i.pravatar.cc/300",
+                uri: avatarUri,
               }}
               style={styles.avatar}
             />
 
-            <Pressable style={styles.editAvatar}>
-              <Ionicons name="camera" size={18} color="white" />
-            </Pressable>
+            <View style={styles.avatarStatus} />
+
+            <View style={styles.cameraButton}>
+              <Ionicons name="camera" size={13} color="#FFFFFF" />
+            </View>
           </View>
 
-          <Text style={styles.name}>{user?.fullName || "Người dùng"}</Text>
+          <View style={styles.userInfo}>
+            <View style={styles.nameRow}>
+              <Text style={styles.name} numberOfLines={1}>
+                {user?.fullName || "Người dùng"}
+              </Text>
 
-          <Text style={styles.email}>{user?.email || ""}</Text>
-
-          <Text style={styles.member}>Member since July 2026</Text>
-        </View>
-
-        {/* =========================
-            STATISTIC
-        ========================= */}
-
-        <View style={styles.statCard}>
-          {/* ĐƠN HÀNG */}
-
-          <View style={styles.statItem}>
-            {loadingStats ? (
-              <ActivityIndicator size="small" color="#111827" />
-            ) : (
-              <Text style={styles.statNumber}>{orderCount}</Text>
-            )}
-
-            <Text style={styles.statLabel}>Đơn hàng</Text>
-          </View>
-
-          <View style={styles.divider} />
-
-          {/* YÊU THÍCH */}
-
-          <View style={styles.statItem}>
-            {loadingStats ? (
-              <ActivityIndicator size="small" color="#111827" />
-            ) : (
-              <Text style={styles.statNumber}>{favoriteCount}</Text>
-            )}
-
-            <Text style={styles.statLabel}>Yêu thích</Text>
-          </View>
-
-          <View style={styles.divider} />
-
-          {/* ĐÁNH GIÁ */}
-
-          <View style={styles.statItem}>
-            {loadingStats ? (
-              <ActivityIndicator size="small" color="#111827" />
-            ) : (
-              <Text style={styles.statNumber}>{reviewCount}</Text>
-            )}
-
-            <Text style={styles.statLabel}>Đánh giá</Text>
-          </View>
-        </View>
-
-        {/* =========================
-            MENU
-        ========================= */}
-
-        <View style={styles.menuCard}>
-          {menus.map((item, index) => (
-            <Pressable
-              android_ripple={{
-                color: "#EFEFEF",
-              }}
-              key={index}
-              onPress={() => {
-                navigation.navigate(item.screen);
-              }}
-              style={({ pressed }) => [
-                styles.menuItem,
-                pressed && {
-                  opacity: 0.6,
-                },
-                index === menus.length - 1 && {
-                  borderBottomWidth: 0,
-                },
-              ]}
-            >
-              <View style={styles.menuLeft}>
-                <Ionicons name={item.icon} size={22} color="#111827" />
-
-                <Text style={styles.menuText}>{item.title}</Text>
+              <View style={styles.vipBadge}>
+                <Text style={styles.vipText}>VIP</Text>
               </View>
+            </View>
 
-              <Ionicons name="chevron-forward" size={20} color="#9CA3AF" />
-            </Pressable>
-          ))}
+            <Text style={styles.email} numberOfLines={1}>
+              {user?.email || ""}
+            </Text>
+
+            <Text style={styles.member}>Thành viên RYDE</Text>
+          </View>
+
+          <Ionicons name="chevron-forward" size={25} color="#667085" />
+        </Pressable>
+
+        {/* =================================================
+            STATISTICS
+        ================================================= */}
+
+        <View style={styles.statsContainer}>
+          {renderStat(
+            "bag-handle-outline",
+            orderCount,
+            "ĐƠN HÀNG",
+            "Tất cả đơn hàng",
+          )}
+
+          <View style={styles.statDivider} />
+
+          {renderStat(
+            "heart-outline",
+            favoriteCount,
+            "YÊU THÍCH",
+            "Sản phẩm đã lưu",
+          )}
+
+          <View style={styles.statDivider} />
+
+          {renderStat("star-outline", reviewCount, "ĐÁNH GIÁ", "Đã đánh giá")}
         </View>
 
-        {/* =========================
-            VERSION
-        ========================= */}
+        {/* =================================================
+            ACCOUNT
+        ================================================= */}
 
-        <Text style={styles.version}>Version 1.0.0</Text>
+        <Text style={styles.sectionTitle}>TÀI KHOẢN</Text>
 
-        {/* =========================
+        {renderMenu(accountMenus)}
+
+        {/* =================================================
+            OTHER
+        ================================================= */}
+
+        <Text style={[styles.sectionTitle, styles.otherTitle]}>KHÁC</Text>
+
+        {renderMenu(otherMenus)}
+
+        {/* =================================================
             LOGOUT
-        ========================= */}
+        ================================================= */}
 
         <Pressable
           onPress={handleLogout}
           style={({ pressed }) => [
             styles.logoutButton,
-            pressed && {
-              opacity: 0.85,
-            },
+            pressed && styles.logoutPressed,
           ]}
         >
-          <Ionicons name="log-out-outline" size={22} color="white" />
+          <View style={styles.logoutLeft}>
+            <Ionicons name="log-out-outline" size={27} color="#EF4444" />
 
-          <Text style={styles.logoutText}>Đăng xuất</Text>
+            <Text style={styles.logoutText}>ĐĂNG XUẤT</Text>
+          </View>
+
+          <Ionicons name="chevron-forward" size={22} color="#98A2B3" />
         </Pressable>
+
+        {/* =================================================
+            VERSION
+        ================================================= */}
+
+        <Text style={styles.version}>RYDE · VERSION 1.0.0</Text>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
+// ============================================================
+// STYLES
+// ============================================================
+
 const styles = StyleSheet.create({
+  // ==========================================================
+  // CONTAINER
+  // ==========================================================
+
   container: {
     flex: 1,
-    backgroundColor: "#F5F5F5",
+    backgroundColor: "#FFFFFF",
   },
 
-  header: {
-    backgroundColor: "#111827",
-    alignItems: "center",
-    paddingTop: 20,
-    paddingBottom: 80,
-    borderBottomLeftRadius: 35,
-    borderBottomRightRadius: 35,
+  scrollContent: {
+    paddingHorizontal: 24,
+    paddingTop: 18,
+    paddingBottom: 45,
+    position: "relative",
+    overflow: "hidden",
+  },
+
+  // ==========================================================
+  // BACKGROUND
+  // ==========================================================
+
+  backgroundDecor: {
+    ...StyleSheet.absoluteFillObject,
+    pointerEvents: "none",
+  },
+
+  dotPattern: {
+    position: "absolute",
+    top: 45,
+    left: -2,
+    width: 75,
+    height: 80,
+    flexDirection: "row",
+    flexWrap: "wrap",
+    opacity: 0.42,
+  },
+
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#D7DDE6",
+    marginRight: 9,
+    marginBottom: 9,
+  },
+
+  shoeImage: {
+    position: "absolute",
+    top: 15,
+    right: -95,
+    width: 370,
+    height: 370,
+    opacity: 0.12,
+  },
+
+  // ==========================================================
+  // TOP HEADER
+  // ==========================================================
+
+  topHeader: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+
+    position: "relative",
+    zIndex: 5,
+
+    minHeight: 88,
   },
 
   headerTitle: {
-    color: "#fff",
-    fontSize: 30,
-    fontWeight: "700",
-    marginBottom: 22,
+    fontSize: 43,
+    lineHeight: 48,
+
+    fontWeight: "900",
+
+    letterSpacing: -1.5,
+
+    color: "#101828",
   },
 
-  avatarContainer: {
+  headerAccent: {
+    width: 48,
+    height: 4,
+
+    backgroundColor: COLORS?.primary || "#246BFE",
+
+    borderRadius: 2,
+
+    marginTop: 11,
+  },
+
+  settingsButton: {
+    width: 48,
+    height: 48,
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    marginTop: 2,
+  },
+
+  settingsPressed: {
+    opacity: 0.5,
+  },
+
+  // ==========================================================
+  // MEMBER LABEL
+  // ==========================================================
+
+  memberLabel: {
     position: "relative",
+    zIndex: 3,
+
+    marginTop: 28,
+
+    fontSize: 15,
+    fontWeight: "700",
+
+    letterSpacing: 0.7,
+
+    color: "#667085",
+  },
+
+  // ==========================================================
+  // PROFILE INFO
+  // ==========================================================
+
+  profileInfo: {
+    position: "relative",
+    zIndex: 3,
+
+    flexDirection: "row",
+    alignItems: "center",
+
+    marginTop: 25,
+
+    minHeight: 105,
+  },
+
+  profilePressed: {
+    opacity: 0.7,
+  },
+
+  avatarWrapper: {
+    width: 94,
+    height: 94,
+
+    position: "relative",
+
+    marginRight: 17,
   },
 
   avatar: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    borderWidth: 4,
-    borderColor: "#fff",
+    width: 94,
+    height: 94,
+
+    borderRadius: 47,
+
+    backgroundColor: "#F2F4F7",
   },
 
-  editAvatar: {
+  avatarStatus: {
     position: "absolute",
-    bottom: 0,
-    right: 0,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#111827",
-    borderWidth: 3,
-    borderColor: "#fff",
+
+    width: 13,
+    height: 13,
+
+    right: 2,
+    bottom: 5,
+
+    borderRadius: 7,
+
+    backgroundColor: "#22C55E",
+
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
+  },
+
+  cameraButton: {
+    position: "absolute",
+
+    right: -1,
+    bottom: -1,
+
+    width: 28,
+    height: 28,
+
+    borderRadius: 14,
+
+    backgroundColor: "#101828",
+
     justifyContent: "center",
     alignItems: "center",
+
+    borderWidth: 2,
+    borderColor: "#FFFFFF",
+  },
+
+  userInfo: {
+    flex: 1,
+    minWidth: 0,
+  },
+
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+
+    paddingRight: 4,
   },
 
   name: {
-    color: "#fff",
-    fontSize: 24,
-    fontWeight: "700",
-    marginTop: 18,
+    flexShrink: 1,
+
+    fontSize: 20,
+    lineHeight: 26,
+
+    fontWeight: "800",
+
+    color: "#101828",
+
+    letterSpacing: -0.3,
+  },
+
+  vipBadge: {
+    marginLeft: 8,
+
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+
+    borderRadius: 5,
+
+    backgroundColor: "#101828",
+  },
+
+  vipText: {
+    color: "#FFFFFF",
+
+    fontSize: 10,
+    fontWeight: "800",
+
+    letterSpacing: 0.5,
   },
 
   email: {
-    color: "#D1D5DB",
-    marginTop: 8,
-    fontSize: 15,
+    marginTop: 6,
+
+    fontSize: 14.5,
+
+    color: "#667085",
   },
 
   member: {
-    color: "#9CA3AF",
-    marginTop: 6,
-    fontSize: 14,
+    marginTop: 5,
+
+    fontSize: 13.5,
+
+    color: "#98A2B3",
   },
 
-  statCard: {
-    backgroundColor: "#fff",
-    marginHorizontal: 20,
-    marginTop: -40,
-    borderRadius: 22,
+  // ==========================================================
+  // STATS
+  // ==========================================================
+
+  statsContainer: {
+    position: "relative",
+    zIndex: 3,
+
     flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    paddingVertical: 22,
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
+
+    marginTop: 38,
+    marginBottom: 38,
+
+    minHeight: 160,
   },
 
   statItem: {
-    alignItems: "center",
-    justifyContent: "center",
     flex: 1,
-    minHeight: 45,
+
+    alignItems: "center",
+    justifyContent: "flex-start",
+
+    paddingHorizontal: 4,
   },
 
-  divider: {
-    width: 1,
-    height: 40,
-    backgroundColor: "#ECECEC",
+  statIcon: {
+    marginBottom: 9,
   },
 
   statNumber: {
-    fontSize: 22,
-    fontWeight: "700",
-    color: "#111827",
+    fontSize: 32,
+    lineHeight: 36,
+
+    fontWeight: "900",
+
+    color: "#101828",
+
+    letterSpacing: -0.7,
+  },
+
+  loading: {
+    height: 36,
+    marginBottom: 0,
   },
 
   statLabel: {
-    marginTop: 5,
-    color: "#6B7280",
+    marginTop: 7,
+
+    fontSize: 13,
+    lineHeight: 18,
+
+    fontWeight: "800",
+
+    color: "#667085",
+
+    letterSpacing: 0.5,
   },
 
-  menuCard: {
-    backgroundColor: "#fff",
-    marginHorizontal: 20,
-    marginTop: 25,
-    borderRadius: 22,
+  statDescription: {
+    marginTop: 3,
+
+    fontSize: 11.5,
+    lineHeight: 16,
+
+    textAlign: "center",
+
+    color: "#98A2B3",
+  },
+
+  statDivider: {
+    width: 1,
+    height: 125,
+
+    marginTop: 4,
+
+    backgroundColor: "#E4E7EC",
+  },
+
+  // ==========================================================
+  // SECTION
+  // ==========================================================
+
+  sectionTitle: {
+    position: "relative",
+    zIndex: 3,
+
+    marginBottom: 12,
+
+    fontSize: 14,
+
+    fontWeight: "800",
+
+    letterSpacing: 0.8,
+
+    color: "#667085",
+  },
+
+  otherTitle: {
+    marginTop: 30,
+  },
+
+  // ==========================================================
+  // MENU
+  // ==========================================================
+
+  menuContainer: {
+    position: "relative",
+    zIndex: 3,
+
+    backgroundColor: "#FFFFFF",
+
+    borderWidth: 1,
+    borderColor: "#F0F1F3",
+
+    borderRadius: 18,
+
     overflow: "hidden",
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    shadowOffset: {
-      width: 0,
-      height: 3,
-    },
   },
 
   menuItem: {
-    height: 62,
+    minHeight: 70,
+
     flexDirection: "row",
-    justifyContent: "space-between",
+
     alignItems: "center",
+
+    justifyContent: "space-between",
+
     paddingHorizontal: 20,
+
     borderBottomWidth: 1,
-    borderBottomColor: "#F2F2F2",
+    borderBottomColor: "#EEF0F2",
+  },
+
+  menuItemLast: {
+    borderBottomWidth: 0,
+  },
+
+  menuItemPressed: {
+    backgroundColor: "#FAFAFA",
   },
 
   menuLeft: {
     flexDirection: "row",
     alignItems: "center",
+
+    flex: 1,
   },
 
   menuText: {
     marginLeft: 16,
+
     fontSize: 16,
-    color: "#111827",
-    fontWeight: "500",
+
+    fontWeight: "600",
+
+    color: "#101828",
   },
 
-  version: {
-    textAlign: "center",
-    color: "#9CA3AF",
-    marginTop: 30,
-    marginBottom: 18,
-    fontSize: 14,
-  },
+  // ==========================================================
+  // LOGOUT
+  // ==========================================================
 
   logoutButton: {
-    height: 58,
-    marginHorizontal: 20,
-    marginBottom: 40,
-    borderRadius: 18,
-    backgroundColor: "#111827",
+    position: "relative",
+    zIndex: 3,
+
+    minHeight: 70,
+
+    marginTop: 30,
+
+    paddingHorizontal: 20,
+
     flexDirection: "row",
-    justifyContent: "center",
+    alignItems: "center",
+    justifyContent: "space-between",
+
+    backgroundColor: "#FFFFFF",
+
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+
+    borderColor: "#F0F1F3",
+  },
+
+  logoutPressed: {
+    backgroundColor: "#FFF7F7",
+  },
+
+  logoutLeft: {
+    flexDirection: "row",
     alignItems: "center",
   },
 
   logoutText: {
-    color: "#fff",
-    marginLeft: 10,
-    fontSize: 16,
-    fontWeight: "700",
+    marginLeft: 16,
+
+    fontSize: 15,
+
+    fontWeight: "800",
+
+    letterSpacing: 0.4,
+
+    color: "#EF4444",
+  },
+
+  // ==========================================================
+  // VERSION
+  // ==========================================================
+
+  version: {
+    position: "relative",
+    zIndex: 3,
+
+    marginTop: 28,
+
+    textAlign: "center",
+
+    fontSize: 10.5,
+
+    fontWeight: "600",
+
+    letterSpacing: 0.8,
+
+    color: "#B0B7C3",
   },
 });
