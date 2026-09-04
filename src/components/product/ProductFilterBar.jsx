@@ -68,7 +68,7 @@ const ProductFilterBar = ({
             {/* Danh mục */}
             <ScrollView
                 horizontal
-                style={{ maxHeight: 75, marginBottom: 10 }}
+                style={{ maxHeight: 75 }}
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.categoryContainer}
             >
@@ -130,7 +130,6 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         justifyContent: "space-between",
         alignItems: "center",
-
     },
 
     left: {
