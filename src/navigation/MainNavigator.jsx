@@ -16,6 +16,7 @@ import AllProductsScreen from "../screens/Product/AllProductsScreen";
 import AllProductsByBrandScreen from "../screens/Product/AllProductsByBrandScreen";
 import VoucherScreen from "../screens/Voucher/VoucherScreen";
 import AccountScreen from "../screens/Profile/AccountScreen";
+import EditProfile from "../screens/Profile/EditProfileScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -53,6 +54,8 @@ export default function MainNavigator() {
       <Stack.Screen name="Notifications" component={NotificationScreen} />
 
       <Stack.Screen name="Account" component={AccountScreen} />
+
+      <Stack.Screen name="EditProfile" component={EditProfile} />
 
       <Stack.Screen
         name="CreateReview"

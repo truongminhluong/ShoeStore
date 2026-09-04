@@ -28,7 +28,7 @@ export default function AccountScreen({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       refreshProfile();
-    }, [refreshProfile]),
+    }, []),
   );
 
   const isActive = user?.isActive === true;
@@ -432,7 +432,9 @@ export default function AccountScreen({ navigation }) {
             ]}
             onPress={() => {
               // TODO:
-              // navigation.navigate("EditProfile");
+              navigation.navigate("EditProfile", {
+                user: user
+              });
             }}
             accessibilityRole="button"
             accessibilityLabel="Chỉnh sửa thông tin"
