@@ -204,8 +204,8 @@ export default function OrderScreen({ navigation }) {
 
       case "cancelled":
         return {
-          color: COLORS_UI.gray,
-          background: COLORS_UI.grayBg,
+          color: "#FF0000",
+          background: "#FFE5E5",
         };
 
       default:
@@ -669,7 +669,6 @@ export default function OrderScreen({ navigation }) {
     );
   };
 
-
   /**
    * ==========================================================
    * LOADING
@@ -833,7 +832,6 @@ export default function OrderScreen({ navigation }) {
           </>
         }
       />
-
     </View>
   );
 }
@@ -1093,24 +1091,35 @@ const styles = StyleSheet.create({
   },
 
   statusBadge: {
-    minHeight: 32,
-    paddingHorizontal: 11,
-    borderRadius: 99,
+    minWidth: 82,
+    minHeight: 34,
+
+    paddingHorizontal: 12,
+
+    borderRadius: 999,
+
     flexDirection: "row",
     alignItems: "center",
-    gap: 7,
+    justifyContent: "center",
+
+    flexShrink: 0,
   },
 
   statusDot: {
     width: 7,
     height: 7,
-    borderRadius: 10,
+    borderRadius: 999,
+
+    marginRight: 7,
+
+    flexShrink: 0,
   },
 
   statusText: {
     fontSize: 12,
-    lineHeight: 16,
     fontWeight: "700",
+    flexShrink: 0,
+    includeFontPadding: false,
   },
 
   /**
