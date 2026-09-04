@@ -11,7 +11,6 @@ import {
 } from "react-native";
 
 import { useFocusEffect } from "@react-navigation/native";
-
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -25,20 +24,43 @@ import {
 
 import COLORS from "../../constants/colors";
 
+/* =========================================================
+   RYDE UI
+========================================================= */
+
+const UI = {
+  background: "#FAFAF9",
+  surface: "#FFFFFF",
+
+  ink: "#0F1B33",
+  inkSoft: "#334155",
+
+  muted: "#64748B",
+  subtle: "#94A3B8",
+
+  line: "#E7EAF0",
+
+  blue: COLORS.primary,
+  blueSoft: "#EFF5FF",
+
+  danger: "#DC2626",
+};
+
 export default function AddressScreen({ navigation }) {
   const insets = useSafeAreaInsets();
 
   const { token } = useAuth();
 
   const [addresses, setAddresses] = useState([]);
-
   const [loading, setLoading] = useState(true);
 
-  // =========================
-  // LẤY DANH SÁCH ĐỊA CHỈ
-  // =========================
+  /* =========================================================
+     LẤY DANH SÁCH ĐỊA CHỈ
+  ========================================================= */
 
-  const fetchAddresses = async () => {
+  const fetchAddresses = useCallback(async () => {
+    if (!token) return;
+
     try {
       setLoading(true);
 
@@ -60,11 +82,11 @@ export default function AddressScreen({ navigation }) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
-  // =========================
-  // ĐẶT ĐỊA CHỈ LÀM MẶC ĐỊNH
-  // =========================
+  /* =========================================================
+     ĐẶT ĐỊA CHỈ MẶC ĐỊNH
+  ========================================================= */
 
   const handleSetDefault = async (addressId) => {
     try {
@@ -72,7 +94,6 @@ export default function AddressScreen({ navigation }) {
 
       Alert.alert("Thành công", "Đã đặt địa chỉ làm mặc định");
 
-      // Load lại danh sách
       fetchAddresses();
     } catch (error) {
       console.log(
@@ -82,14 +103,14 @@ export default function AddressScreen({ navigation }) {
 
       Alert.alert(
         "Thông báo",
-        error.response?.data?.message || "Không thể đặt địa chỉ mặc định",
+        error.response?.data?.message || "Không thể đặt địa chỉ làm mặc định",
       );
     }
   };
 
-  // =========================
-  // XÓA ĐỊA CHỈ
-  // =========================
+  /* =========================================================
+     XÓA ĐỊA CHỈ
+  ========================================================= */
 
   const handleDeleteAddress = (addressId) => {
     Alert.alert("Xóa địa chỉ", "Bạn có chắc chắn muốn xóa địa chỉ này không?", [
@@ -97,7 +118,6 @@ export default function AddressScreen({ navigation }) {
         text: "Hủy",
         style: "cancel",
       },
-
       {
         text: "Xóa",
         style: "destructive",
@@ -108,7 +128,6 @@ export default function AddressScreen({ navigation }) {
 
             Alert.alert("Thành công", "Xóa địa chỉ thành công");
 
-            // Load lại danh sách
             fetchAddresses();
           } catch (error) {
             console.log(
@@ -126,17 +145,264 @@ export default function AddressScreen({ navigation }) {
     ]);
   };
 
-  // =========================
-  // GỌI API KHI MỞ MÀN HÌNH
-  // =========================
+  /* =========================================================
+     MENU ĐỊA CHỈ
+  ========================================================= */
+
+  const handleAddressMenu = (item) => {
+    const actions = [
+      {
+        text: "Hủy",
+        style: "cancel",
+      },
+    ];
+
+    if (!item.isDefault) {
+      actions.push({
+        text: "Đặt làm mặc định",
+        onPress: () => {
+          handleSetDefault(item._id);
+        },
+      });
+    }
+
+    actions.push({
+      text: "Xóa địa chỉ",
+      style: "destructive",
+      onPress: () => {
+        handleDeleteAddress(item._id);
+      },
+    });
+
+    Alert.alert(
+      "Tùy chọn địa chỉ",
+      "Bạn muốn thực hiện thao tác nào?",
+      actions,
+    );
+  };
+
+  /* =========================================================
+     LOAD KHI FOCUS
+  ========================================================= */
 
   useFocusEffect(
     useCallback(() => {
       if (token) {
         fetchAddresses();
       }
-    }, [token]),
+    }, [token, fetchAddresses]),
   );
+
+  /* =========================================================
+     ADDRESS ITEM
+  ========================================================= */
+
+  const renderAddressItem = ({ item }) => {
+    return (
+      <View
+        style={[
+          styles.addressCard,
+          item.isDefault && styles.addressCardDefault,
+        ]}
+      >
+        {/* TOP */}
+
+        <View style={styles.addressTopRow}>
+          <View style={styles.addressIdentity}>
+            {/* LOCATION ICON */}
+
+            <View
+              style={[
+                styles.addressIcon,
+                item.isDefault && styles.addressIconDefault,
+              ]}
+            >
+              <Ionicons name="location-outline" size={20} color={UI.blue} />
+            </View>
+
+            {/* USER INFO */}
+
+            <View style={styles.nameBlock}>
+              <View style={styles.nameRow}>
+                <Text style={styles.addressName} numberOfLines={1}>
+                  {item.fullName}
+                </Text>
+
+                {item.isDefault && (
+                  <View style={styles.defaultBadge}>
+                    <View style={styles.defaultDot} />
+
+                    <Text style={styles.defaultText}>MẶC ĐỊNH</Text>
+                  </View>
+                )}
+              </View>
+
+              <Text style={styles.addressPhone}>{item.phone}</Text>
+            </View>
+          </View>
+
+          {/* MENU */}
+
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={styles.menuButton}
+            onPress={() => handleAddressMenu(item)}
+          >
+            <Ionicons name="ellipsis-horizontal" size={20} color={UI.muted} />
+          </TouchableOpacity>
+        </View>
+
+        {/* DIVIDER */}
+
+        <View style={styles.cardDivider} />
+
+        {/* ADDRESS */}
+
+        <View style={styles.addressBottom}>
+          <Ionicons
+            name="navigate-outline"
+            size={16}
+            color={UI.subtle}
+            style={styles.addressSmallIcon}
+          />
+
+          <Text style={styles.addressText}>
+            {item.addressDetail}, {item.ward}, {item.district}, {item.province}
+          </Text>
+        </View>
+      </View>
+    );
+  };
+
+  /* =========================================================
+     EMPTY STATE
+  ========================================================= */
+
+  const renderEmptyState = () => {
+    return (
+      <View style={styles.emptyContainer}>
+        <View style={styles.emptyIcon}>
+          <Ionicons name="location-outline" size={38} color={UI.blue} />
+        </View>
+
+        <Text style={styles.emptyEyebrow}>YOUR ADDRESS</Text>
+
+        <Text style={styles.emptyTitle}>Chưa có địa chỉ</Text>
+
+        <Text style={styles.emptyDescription}>
+          Thêm địa chỉ nhận hàng để quá trình thanh toán của bạn nhanh chóng và
+          thuận tiện hơn.
+        </Text>
+
+        <TouchableOpacity
+          activeOpacity={0.85}
+          style={styles.emptyButton}
+          onPress={() => navigation.navigate("AddAddress")}
+        >
+          <Ionicons name="add" size={20} color="#FFFFFF" />
+
+          <Text style={styles.emptyButtonText}>Thêm địa chỉ</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  };
+
+  /* =========================================================
+     HEADER
+  ========================================================= */
+
+  const renderHeader = () => {
+    return (
+      <>
+        <View style={styles.header}>
+          {/* HEADER TOP */}
+
+          <View style={styles.headerTop}>
+            <TouchableOpacity
+              activeOpacity={0.75}
+              style={styles.headerButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="arrow-back" size={21} color={UI.ink} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={styles.addHeaderButton}
+              onPress={() => navigation.navigate("AddAddress")}
+            >
+              <Ionicons name="add" size={23} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+
+          {/* HEADER CONTENT */}
+
+          <View style={styles.headerContent}>
+            <Text style={styles.headerEyebrow}>ACCOUNT</Text>
+
+            <Text style={styles.headerTitle}>Địa chỉ của tôi</Text>
+
+            <Text style={styles.headerSubtitle}>
+              Quản lý địa chỉ nhận hàng của bạn
+            </Text>
+
+            <View style={styles.headerAccent} />
+          </View>
+
+          {/* WATERMARK */}
+
+          <View style={styles.headerWatermark}>
+            <Ionicons name="location-outline" size={130} color={UI.blue} />
+          </View>
+        </View>
+
+        {/* =================================================
+            SECTION HEADER
+        ================================================= */}
+
+        {addresses.length > 0 && (
+          <View style={styles.sectionHeader}>
+            <View>
+              <Text style={styles.sectionEyebrow}>YOUR ADDRESSES</Text>
+
+              <Text style={styles.sectionTitle}>Địa chỉ nhận hàng</Text>
+            </View>
+
+            <View style={styles.countBadge}>
+              <Text style={styles.countText}>{addresses.length}</Text>
+            </View>
+          </View>
+        )}
+      </>
+    );
+  };
+
+  /* =========================================================
+     LOADING
+  ========================================================= */
+
+  if (loading) {
+    return (
+      <View
+        style={[
+          styles.container,
+          {
+            paddingTop: insets.top,
+          },
+        ]}
+      >
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="small" color={UI.blue} />
+
+          <Text style={styles.loadingText}>Đang tải địa chỉ...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  /* =========================================================
+     MAIN
+  ========================================================= */
 
   return (
     <View
@@ -147,336 +413,568 @@ export default function AddressScreen({ navigation }) {
         },
       ]}
     >
-      {/* HEADER */}
-
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#1F2937" />
-        </TouchableOpacity>
-
-        <Text style={styles.headerTitle}>Địa chỉ của tôi</Text>
-
-        <TouchableOpacity
-          onPress={() => {
-            navigation.navigate("AddAddress");
-          }}
-        >
-          <Ionicons name="add" size={28} color={COLORS.primary} />
-        </TouchableOpacity>
-      </View>
-
-      {/* LOADING */}
-
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={COLORS.primary} />
-
-          <Text style={styles.loadingText}>Đang tải địa chỉ...</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={addresses}
-          keyExtractor={(item) => item._id}
-          contentContainerStyle={[
-            styles.content,
-            addresses.length === 0 && {
-              flexGrow: 1,
-            },
-          ]}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
+      <FlatList
+        data={addresses}
+        keyExtractor={(item) => item._id}
+        renderItem={renderAddressItem}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.listContent,
+          addresses.length === 0 && styles.listContentEmpty,
+        ]}
+        ListHeaderComponent={renderHeader()}
+        ListEmptyComponent={renderEmptyState()}
+        ListFooterComponent={
+          addresses.length > 0 ? (
+            <View style={styles.footerHint}>
               <Ionicons
-                name="location-outline"
-                size={70}
-                color={COLORS.primary}
+                name="shield-checkmark-outline"
+                size={16}
+                color={UI.subtle}
               />
 
-              <Text style={styles.emptyTitle}>Chưa có địa chỉ</Text>
-
-              <Text style={styles.emptyDescription}>
-                Bạn chưa thêm địa chỉ nhận hàng nào
+              <Text style={styles.footerHintText}>
+                Địa chỉ của bạn được bảo mật
               </Text>
-
-              <TouchableOpacity
-                style={styles.addButton}
-                onPress={() => {
-                  navigation.navigate("AddAddress");
-                }}
-              >
-                <Ionicons name="add" size={20} color="#FFFFFF" />
-
-                <Text style={styles.addButtonText}>Thêm địa chỉ</Text>
-              </TouchableOpacity>
             </View>
-          }
-          renderItem={({ item }) => (
-            <View style={styles.addressCard}>
-              {/* ICON */}
-
-              <View style={styles.addressIcon}>
-                <Ionicons
-                  name="location-outline"
-                  size={24}
-                  color={COLORS.primary}
-                />
-              </View>
-
-              {/* THÔNG TIN */}
-
-              <View style={styles.addressInfo}>
-                <View style={styles.nameRow}>
-                  <Text style={styles.addressName}>{item.fullName}</Text>
-
-                  {item.isDefault && (
-                    <View style={styles.defaultBadge}>
-                      <Text style={styles.defaultText}>Mặc định</Text>
-                    </View>
-                  )}
-                </View>
-
-                <Text style={styles.addressPhone}>{item.phone}</Text>
-
-                <Text style={styles.addressText}>
-                  {item.addressDetail}, {item.ward}, {item.district},{" "}
-                  {item.province}
-                </Text>
-              </View>
-
-              {/* MENU */}
-
-              <TouchableOpacity
-                onPress={() => {
-                  Alert.alert(
-                    "Tùy chọn địa chỉ",
-                    "Bạn muốn thực hiện thao tác nào?",
-                    [
-                      {
-                        text: "Hủy",
-                        style: "cancel",
-                      },
-
-                      // Chỉ hiển thị nếu chưa phải mặc định
-                      ...(!item.isDefault
-                        ? [
-                            {
-                              text: "Đặt làm mặc định",
-                              onPress: () => {
-                                handleSetDefault(item._id);
-                              },
-                            },
-                          ]
-                        : []),
-
-                      {
-                        text: "Xóa địa chỉ",
-                        style: "destructive",
-                        onPress: () => {
-                          handleDeleteAddress(item._id);
-                        },
-                      },
-                    ],
-                  );
-                }}
-              >
-                <Ionicons name="ellipsis-vertical" size={20} color="#9CA3AF" />
-              </TouchableOpacity>
-            </View>
-          )}
-        />
-      )}
+          ) : null
+        }
+      />
     </View>
   );
 }
 
+/* =========================================================
+   STYLES
+========================================================= */
+
 const styles = StyleSheet.create({
+  /* =======================================================
+     CONTAINER
+  ======================================================= */
+
   container: {
     flex: 1,
-    backgroundColor: "#F8F9FC",
+    backgroundColor: UI.background,
   },
 
+  /* =======================================================
+     HEADER
+  ======================================================= */
+
   header: {
-    height: 60,
+    minHeight: 178,
 
     paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 18,
+
+    backgroundColor: UI.surface,
+
+    overflow: "hidden",
+  },
+
+  headerTop: {
+    minHeight: 48,
 
     flexDirection: "row",
-
     alignItems: "center",
-
     justifyContent: "space-between",
 
-    backgroundColor: "#FFFFFF",
+    zIndex: 5,
+  },
 
-    borderBottomWidth: 1,
+  headerButton: {
+    width: 44,
+    height: 44,
 
-    borderBottomColor: "#F0F0F0",
+    borderRadius: 22,
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    backgroundColor: UI.surface,
+
+    borderWidth: 1,
+    borderColor: UI.line,
+  },
+
+  addHeaderButton: {
+    width: 44,
+    height: 44,
+
+    borderRadius: 22,
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    backgroundColor: UI.blue,
+  },
+
+  headerContent: {
+    marginTop: 14,
+
+    zIndex: 3,
+  },
+
+  headerEyebrow: {
+    fontSize: 9,
+    lineHeight: 13,
+
+    fontWeight: "900",
+
+    letterSpacing: 1.5,
+
+    color: UI.blue,
   },
 
   headerTitle: {
-    fontSize: 18,
+    marginTop: 2,
 
-    fontWeight: "700",
+    fontSize: 29,
+    lineHeight: 35,
 
-    color: "#1F2937",
+    fontWeight: "800",
+
+    letterSpacing: -0.8,
+
+    color: UI.ink,
   },
 
-  content: {
-    flexGrow: 1,
+  headerSubtitle: {
+    marginTop: 3,
 
-    padding: 20,
+    fontSize: 13,
+    lineHeight: 19,
+
+    color: UI.muted,
   },
 
-  emptyContainer: {
-    flex: 1,
+  headerAccent: {
+    width: 32,
+    height: 3,
 
-    justifyContent: "center",
+    marginTop: 9,
 
-    alignItems: "center",
+    borderRadius: 2,
 
-    paddingHorizontal: 30,
+    backgroundColor: UI.blue,
   },
 
-  emptyTitle: {
-    fontSize: 20,
+  headerWatermark: {
+    position: "absolute",
 
-    fontWeight: "700",
+    right: -16,
+    bottom: -18,
 
-    color: "#1F2937",
+    opacity: 0.055,
 
-    marginTop: 18,
+    transform: [
+      {
+        rotate: "-12deg",
+      },
+    ],
   },
 
-  emptyDescription: {
-    fontSize: 14,
+  /* =======================================================
+     SECTION
+  ======================================================= */
 
-    color: "#6B7280",
-
-    marginTop: 8,
-
-    textAlign: "center",
-  },
-
-  addButton: {
-    height: 50,
-
-    paddingHorizontal: 24,
-
-    borderRadius: 14,
-
-    backgroundColor: COLORS.primary,
-
+  sectionHeader: {
     flexDirection: "row",
 
-    justifyContent: "center",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+
+    paddingHorizontal: 16,
+
+    paddingTop: 22,
+    paddingBottom: 14,
+
+    backgroundColor: UI.background,
+  },
+
+  sectionEyebrow: {
+    fontSize: 9,
+    lineHeight: 13,
+
+    fontWeight: "900",
+
+    letterSpacing: 1.4,
+
+    color: UI.blue,
+  },
+
+  sectionTitle: {
+    marginTop: 2,
+
+    fontSize: 19,
+    lineHeight: 25,
+
+    fontWeight: "800",
+
+    letterSpacing: -0.3,
+
+    color: UI.ink,
+  },
+
+  countBadge: {
+    minWidth: 38,
+    height: 38,
+
+    paddingHorizontal: 10,
+
+    borderRadius: 19,
 
     alignItems: "center",
+    justifyContent: "center",
 
-    marginTop: 24,
+    backgroundColor: UI.blueSoft,
   },
 
-  addButtonText: {
-    color: "#FFFFFF",
+  countText: {
+    fontSize: 13,
 
-    fontSize: 15,
+    fontWeight: "800",
 
-    fontWeight: "700",
-
-    marginLeft: 8,
+    color: UI.blue,
   },
+
+  /* =======================================================
+     LIST
+  ======================================================= */
+
+  listContent: {
+    paddingBottom: 30,
+  },
+
+  listContentEmpty: {
+    flexGrow: 1,
+  },
+
+  /* =======================================================
+     ADDRESS CARD
+  ======================================================= */
 
   addressCard: {
-    flexDirection: "row",
-    alignItems: "flex-start",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
+    marginHorizontal: 16,
+    marginBottom: 12,
+
     padding: 16,
-    marginBottom: 14,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOpacity: 0.05,
-    shadowRadius: 6,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+
+    backgroundColor: UI.surface,
+
+    borderRadius: 18,
+
+    borderWidth: 1,
+    borderColor: UI.line,
   },
 
+  addressCardDefault: {
+    borderWidth: 1.5,
+    borderColor: UI.blue,
+  },
+
+  addressTopRow: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+
+  addressIdentity: {
+    flex: 1,
+
+    flexDirection: "row",
+    alignItems: "flex-start",
+
+    minWidth: 0,
+  },
+
+  /* =======================================================
+     ICON
+  ======================================================= */
+
   addressIcon: {
-    width: 42,
+    width: 38,
+    height: 38,
 
-    height: 42,
-
-    borderRadius: 21,
-
-    backgroundColor: "#F0F2FF",
-
-    justifyContent: "center",
+    borderRadius: 19,
 
     alignItems: "center",
+    justifyContent: "center",
+
+    backgroundColor: "#F5F7FA",
 
     marginRight: 12,
   },
 
-  addressInfo: {
+  addressIconDefault: {
+    backgroundColor: UI.blueSoft,
+  },
+
+  /* =======================================================
+     NAME
+  ======================================================= */
+
+  nameBlock: {
     flex: 1,
-  },
 
-  addressName: {
-    fontSize: 15,
-
-    fontWeight: "700",
-
-    color: "#1F2937",
-  },
-
-  addressPhone: {
-    fontSize: 13,
-
-    color: "#6B7280",
-
-    marginTop: 4,
-  },
-
-  addressText: {
-    fontSize: 13,
-
-    color: "#6B7280",
-
-    lineHeight: 19,
-
-    marginTop: 5,
-  },
-
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-
-  loadingText: {
-    marginTop: 12,
-    fontSize: 14,
-    color: "#6B7280",
+    minWidth: 0,
   },
 
   nameRow: {
     flexDirection: "row",
+
     alignItems: "center",
+
     flexWrap: "wrap",
+
+    paddingRight: 4,
   },
 
+  addressName: {
+    flexShrink: 1,
+
+    fontSize: 15,
+    lineHeight: 20,
+
+    fontWeight: "800",
+
+    color: UI.ink,
+  },
+
+  addressPhone: {
+    marginTop: 4,
+
+    fontSize: 13,
+    lineHeight: 18,
+
+    color: UI.muted,
+  },
+
+  /* =======================================================
+     DEFAULT
+  ======================================================= */
+
   defaultBadge: {
+    flexDirection: "row",
+
+    alignItems: "center",
+
     marginLeft: 8,
+
     paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-    backgroundColor: "#E8F5E9",
+    paddingVertical: 5,
+
+    borderRadius: 999,
+
+    backgroundColor: UI.blueSoft,
+  },
+
+  defaultDot: {
+    width: 5,
+    height: 5,
+
+    borderRadius: 3,
+
+    backgroundColor: UI.blue,
+
+    marginRight: 5,
   },
 
   defaultText: {
+    fontSize: 9,
+    lineHeight: 11,
+
+    fontWeight: "900",
+
+    letterSpacing: 0.5,
+
+    color: UI.blue,
+  },
+
+  /* =======================================================
+     MENU
+  ======================================================= */
+
+  menuButton: {
+    width: 44,
+    height: 44,
+
+    marginTop: -4,
+    marginRight: -7,
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  /* =======================================================
+     DIVIDER
+  ======================================================= */
+
+  cardDivider: {
+    height: 1,
+
+    backgroundColor: UI.line,
+
+    marginTop: 14,
+    marginBottom: 12,
+  },
+
+  /* =======================================================
+     ADDRESS
+  ======================================================= */
+
+  addressBottom: {
+    flexDirection: "row",
+
+    alignItems: "flex-start",
+  },
+
+  addressSmallIcon: {
+    marginTop: 2,
+
+    marginRight: 7,
+  },
+
+  addressText: {
+    flex: 1,
+
+    fontSize: 13,
+    lineHeight: 19,
+
+    color: UI.inkSoft,
+  },
+
+  /* =======================================================
+     EMPTY
+  ======================================================= */
+
+  emptyContainer: {
+    flex: 1,
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    paddingHorizontal: 28,
+    paddingTop: 40,
+    paddingBottom: 40,
+  },
+
+  emptyIcon: {
+    width: 76,
+    height: 76,
+
+    borderRadius: 38,
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    backgroundColor: UI.blueSoft,
+  },
+
+  emptyEyebrow: {
+    marginTop: 22,
+
+    fontSize: 9,
+    lineHeight: 13,
+
+    fontWeight: "900",
+
+    letterSpacing: 1.4,
+
+    color: UI.blue,
+  },
+
+  emptyTitle: {
+    marginTop: 3,
+
+    fontSize: 22,
+    lineHeight: 28,
+
+    fontWeight: "800",
+
+    letterSpacing: -0.4,
+
+    color: UI.ink,
+  },
+
+  emptyDescription: {
+    marginTop: 9,
+
+    maxWidth: 300,
+
+    fontSize: 14,
+    lineHeight: 21,
+
+    textAlign: "center",
+
+    color: UI.muted,
+  },
+
+  emptyButton: {
+    minHeight: 50,
+
+    paddingHorizontal: 22,
+
+    marginTop: 24,
+
+    borderRadius: 15,
+
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+
+    backgroundColor: UI.blue,
+  },
+
+  emptyButtonText: {
+    marginLeft: 8,
+
+    fontSize: 14,
+
+    fontWeight: "800",
+
+    color: "#FFFFFF",
+  },
+
+  /* =======================================================
+     FOOTER
+  ======================================================= */
+
+  footerHint: {
+    flexDirection: "row",
+
+    alignItems: "center",
+    justifyContent: "center",
+
+    paddingTop: 8,
+    paddingBottom: 4,
+  },
+
+  footerHintText: {
+    marginLeft: 6,
+
     fontSize: 11,
-    fontWeight: "600",
-    color: "#2E7D32",
+
+    color: UI.subtle,
+  },
+
+  /* =======================================================
+     LOADING
+  ======================================================= */
+
+  loadingContainer: {
+    flex: 1,
+
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  loadingText: {
+    marginTop: 12,
+
+    fontSize: 13,
+
+    color: UI.muted,
   },
 });

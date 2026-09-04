@@ -25,9 +25,9 @@ export default function RelatedProductSection({
 
   return (
     <View>
-      <Text style={styles.sectionTitle}>
+      {/* <Text style={styles.sectionTitle}>
         Có thể bạn sẽ thích
-      </Text>
+      </Text> */}
 
       <FlatList
         data={products}

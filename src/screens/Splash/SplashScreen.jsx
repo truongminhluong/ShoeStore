@@ -10,7 +10,7 @@ export default function SplashScreen() {
         resizeMode="contain"
       /> */}
 
-      <Text style={styles.title}>Shoe Store</Text>
+      <Text style={styles.title}>Ryde Store</Text>
 
       <Text style={styles.subtitle}>
         Premium Sneakers Collection

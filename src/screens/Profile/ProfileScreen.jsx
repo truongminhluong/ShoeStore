@@ -118,7 +118,7 @@ export default function ProfileScreen({ navigation }) {
     {
       title: "Danh sách yêu thích",
       icon: "heart-outline",
-      screen: "Wishlist",
+      screen: "Favorite",
     },
   ];
 
