@@ -8,13 +8,14 @@ import {
 } from "react-native";
 
 import ProductCard from "./ProductCard";
-import useNewestProductsViewModel from "../../viewmodels/useNewestProductsViewModel";
 
-export default function ProductSection(
-  { favoriteIds, onToggleFavorite, navigation }
-) {
-  const { products, loading } = useNewestProductsViewModel();
-
+export default function ProductSection({
+  products = [],
+  loading = false,
+  favoriteIds,
+  onToggleFavorite,
+  navigation,
+}) {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -25,30 +26,40 @@ export default function ProductSection(
 
   return (
     <View style={styles.container}>
+      {/* HEADER */}
       <View style={styles.header}>
         <Text style={styles.title}>Hàng mới về</Text>
+
         <TouchableOpacity
+          activeOpacity={0.7}
           onPress={() => navigation.navigate("AllProducts")}
         >
-          <Text style={styles.more}>
-            Xem tất cả
-          </Text>
+          <Text style={styles.more}>Xem tất cả</Text>
         </TouchableOpacity>
       </View>
 
+      {/* PRODUCT LIST */}
       <FlatList
         horizontal
         data={products}
-        keyExtractor={(item) => item._id}
-        renderItem={({ item }) =>
+        keyExtractor={(item, index) =>
+          item?._id?.toString() || index.toString()
+        }
+        renderItem={({ item }) => (
           <ProductCard
             item={item}
             favoriteIds={favoriteIds}
             onToggleFavorite={onToggleFavorite}
-          />}
+          />
+        )}
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.listContent}
-        ItemSeparatorComponent={() => <View style={{ width: 15 }} />}
+        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>Chưa có sản phẩm mới</Text>
+          </View>
+        }
       />
     </View>
   );
@@ -56,36 +67,52 @@ export default function ProductSection(
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 10,
-  },
-
-  loadingContainer: {
-    marginTop: 20,
-    alignItems: "center",
-    justifyContent: "center",
+    marginTop: 24,
   },
 
   header: {
-    paddingHorizontal: 20,
-    marginBottom: 15,
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 20,
+    marginBottom: 14,
+  },
+
+  title: {
+    fontSize: 21,
+    fontWeight: "800",
+    color: "#0F172A",
+  },
+
+  more: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#1157FF",
   },
 
   listContent: {
     paddingHorizontal: 20,
   },
 
-  title: {
-    fontSize: 28,
-    fontWeight: "700",
-    color: "#222",
+  separator: {
+    width: 15,
   },
 
-  more: {
-    color: "#1157FF",
-    fontWeight: "600",
-    fontSize: 15,
+  loadingContainer: {
+    height: 300,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
+  emptyContainer: {
+    width: 300,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 40,
+  },
+
+  emptyText: {
+    fontSize: 14,
+    color: "#64748B",
   },
 });

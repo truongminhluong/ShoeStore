@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 
-import { ScrollView, StyleSheet } from "react-native";
+import { ScrollView, StyleSheet, RefreshControl } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -14,84 +14,104 @@ import ProductSection from "../../components/home/ProductSection";
 import PopularSection from "../../components/home/PopularSection";
 
 import useNotificationViewModel from "../../viewmodels/useNotificationViewModel";
+import useNewestProductsViewModel from "../../viewmodels/useNewestProductsViewModel";
 
 import { useFavorite } from "../../context/FavoriteContext";
 
-import COLORS from "../../constants/colors";
-import { products } from "../../data/productData";
-
 const normalizeText = (value) =>
-  value
-    .toString()
+  String(value || "")
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .trim();
 
 export default function HomeScreen({ navigation }) {
-  const tabBarHeight = useBottomTabBarHeight();
+  const [refreshing, setRefreshing] = useState(false);
 
-  // =========================
-  // THÔNG BÁO
-  // =========================
+  const [searchText, setSearchText] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState(null);
+
+  const tabBarHeight = useBottomTabBarHeight();
 
   const { unreadCount, fetchUnreadCount } = useNotificationViewModel();
 
-  // =========================
-  // STATE
-  // =========================
-
-  const [searchText, setSearchText] = useState("");
-
-  const [selectedBrand, setSelectedBrand] = useState(null);
+  const {
+    products: newestProducts,
+    loading: newestProductsLoading,
+    refresh: refreshNewestProducts,
+  } = useNewestProductsViewModel();
 
   const { favoriteIds, toggleFavorite } = useFavorite();
 
-
-  // =========================
-  // TỰ ĐỘNG KIỂM TRA THÔNG BÁO
-  // =========================
+  // ================================
+  // NOTIFICATION
+  // ================================
 
   useEffect(() => {
-    // Gọi ngay khi HomeScreen được mở
     fetchUnreadCount();
 
-    // Kiểm tra lại mỗi 5 giây
     const interval = setInterval(() => {
       fetchUnreadCount();
     }, 5000);
 
-    // Hủy interval khi rời màn hình
-    return () => {
-      clearInterval(interval);
-    };
+    return () => clearInterval(interval);
   }, [fetchUnreadCount]);
 
-  // =========================
-  // LỌC SẢN PHẨM
-  // =========================
+  // ================================
+  // PULL TO REFRESH
+  // ================================
+
+  const handleRefresh = useCallback(async () => {
+    try {
+      setRefreshing(true);
+
+      await Promise.all([fetchUnreadCount(), refreshNewestProducts()]);
+
+    } catch (error) {
+      console.log(
+        "❌ Lỗi refresh Home:",
+        error?.response?.data || error?.message,
+      );
+    } finally {
+      setRefreshing(false);
+    }
+  }, [fetchUnreadCount, refreshNewestProducts]);
+
+  // ================================
+  // FILTER PRODUCT
+  // ================================
 
   const filteredProducts = useMemo(() => {
     const keyword = normalizeText(searchText);
 
-    return products.filter((product) => {
+    return newestProducts.filter((product) => {
+      const brandName =
+        typeof product?.brand === "string"
+          ? product.brand
+          : product?.brand?.name || "";
+
+      const categoryName =
+        typeof product?.category === "string"
+          ? product.category
+          : product?.category?.name || "";
+
       const matchesBrand =
         !selectedBrand ||
-        normalizeText(product.brand) === normalizeText(selectedBrand.name);
+        normalizeText(brandName) === normalizeText(selectedBrand?.name);
 
       const searchContent = normalizeText(
-        `${product.name} ${product.brand} ${product.category}`,
+        `${product?.name || ""} ${brandName} ${categoryName}`,
       );
 
       const matchesSearch = !keyword || searchContent.includes(keyword);
 
       return matchesBrand && matchesSearch;
     });
-  }, [searchText, selectedBrand]);
+  }, [newestProducts, searchText, selectedBrand]);
 
-  // =========================
-  // CHỌN BRAND
-  // =========================
+  // ================================
+  // BRAND
+  // ================================
 
   const handleSelectBrand = (brand) => {
     setSelectedBrand((currentBrand) =>
@@ -99,19 +119,18 @@ export default function HomeScreen({ navigation }) {
     );
   };
 
-  // =========================
-  // XÓA BỘ LỌC
-  // =========================
+  // ================================
+  // CLEAR FILTER
+  // ================================
 
   const clearFilters = () => {
     setSearchText("");
-
     setSelectedBrand(null);
   };
 
-  // =========================
-  // TÌM KIẾM SẢN PHẨM
-  // =========================
+  // ================================
+  // SEARCH
+  // ================================
 
   const handleSearch = () => {
     const keyword = searchText.trim();
@@ -119,8 +138,13 @@ export default function HomeScreen({ navigation }) {
     navigation.navigate("AllProducts", {
       searchText: keyword,
     });
+
     setSearchText("");
   };
+
+  // ================================
+  // UI
+  // ================================
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -128,6 +152,9 @@ export default function HomeScreen({ navigation }) {
         contentInsetAdjustmentBehavior="automatic"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
         contentContainerStyle={[
           styles.content,
           {
@@ -136,11 +163,9 @@ export default function HomeScreen({ navigation }) {
         ]}
       >
         {/* HEADER */}
-
         <Header navigation={navigation} unreadCount={unreadCount} />
 
-        {/* THANH TÌM KIẾM */}
-
+        {/* SEARCH */}
         <SearchBar
           value={searchText}
           onChangeText={setSearchText}
@@ -150,33 +175,26 @@ export default function HomeScreen({ navigation }) {
           hasActiveFilters={Boolean(searchText.trim() || selectedBrand)}
         />
 
-
         {/* BANNER */}
-
         <BannerSlider />
 
         {/* BRAND */}
-
         <BrandSection
           navigation={navigation}
           selectedBrandId={selectedBrand?.id}
           onSelectBrand={handleSelectBrand}
         />
 
-        {/* SẢN PHẨM */}
-
+        {/* HÀNG MỚI VỀ */}
         <ProductSection
           navigation={navigation}
           products={filteredProducts}
-          searchText={searchText}
-          selectedBrandName={selectedBrand?.name}
-          onClearFilters={clearFilters}
+          loading={newestProductsLoading}
           favoriteIds={favoriteIds}
           onToggleFavorite={toggleFavorite}
         />
 
-        {/* SẢN PHẨM PHỔ BIẾN */}
-
+        {/* POPULAR */}
         <PopularSection />
       </ScrollView>
     </SafeAreaView>
@@ -186,10 +204,10 @@ export default function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
+    backgroundColor: "#FFFFFF",
   },
 
   content: {
-    flexGrow: 1,
+    paddingTop: 4,
   },
 });

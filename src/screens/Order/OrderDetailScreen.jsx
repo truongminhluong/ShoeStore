@@ -8,7 +8,8 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
-  Alert,
+  Alert,  
+  RefreshControl,
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -32,12 +33,27 @@ export default function OrderDetailScreen({ navigation, route }) {
 
   const [reviewedMap, setReviewedMap] = useState({});
 
+  const [refreshing, setRefreshing] = useState(false);
+
   const { order, loading, error, fetchOrderDetail } =
     useOrderDetailViewModel(orderId);
 
   // ============================================================
   // CHECK REVIEW
   // ============================================================
+  
+  const handleRefresh = async () => {
+    try {
+      setRefreshing(true);
+
+      await fetchOrderDetail();
+
+    } catch (error) {
+      console.log("❌ Lỗi refresh:", error?.response?.data || error?.message);
+    } finally {
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     if (!order || order.status !== "delivered") {
@@ -184,6 +200,31 @@ export default function OrderDetailScreen({ navigation, route }) {
   // ============================================================
 
   const handleCancelOrder = () => {
+    if (!order?._id) {
+      Alert.alert("Lỗi", "Không tìm thấy mã đơn hàng");
+      return;
+    }
+
+    if (!token) {
+      Alert.alert("Lỗi", "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
+      return;
+    }
+
+    // Kiểm tra ngay trên frontend
+    if (!["pending", "confirmed"].includes(order.status)) {
+      Alert.alert("Không thể hủy", "Đơn hàng hiện tại không thể hủy.");
+      return;
+    }
+
+    // VNPAY đã thanh toán thì không cho hủy
+    if (order.paymentMethod === "vnpay" && order.paymentStatus === "paid") {
+      Alert.alert(
+        "Không thể hủy",
+        "Đơn hàng đã thanh toán VNPAY và không thể hủy.",
+      );
+      return;
+    }
+
     Alert.alert(
       "Hủy đơn hàng",
       "Bạn có chắc chắn muốn hủy đơn hàng này không?",
@@ -192,30 +233,50 @@ export default function OrderDetailScreen({ navigation, route }) {
           text: "Không",
           style: "cancel",
         },
-
         {
           text: "Hủy đơn",
           style: "destructive",
-
           onPress: async () => {
             try {
-              if (!token) {
-                Alert.alert("Lỗi", "Phiên đăng nhập đã hết hạn");
-                return;
+              setCancelling(true);
+
+              console.log("=================================");
+              console.log("🗑️ BẮT ĐẦU HỦY ĐƠN");
+              console.log("Order ID:", order._id);
+              console.log("Status:", order.status);
+              console.log("Payment:", order.paymentMethod);
+              console.log("Payment Status:", order.paymentStatus);
+              console.log("=================================");
+
+              const response = await cancelOrderApi(order._id, token);
+
+              console.log("📥 API HỦY ĐƠN:", response);
+
+              if (!response?.success) {
+                throw new Error(response?.message || "Không thể hủy đơn hàng");
               }
 
-              await cancelOrderApi(order._id, token);
-
-              Alert.alert("Thành công", "Đơn hàng đã được hủy");
-
-              fetchOrderDetail();
-            } catch (err) {
-              console.log("Lỗi hủy đơn:", err.response?.data || err.message);
+              // Load lại order từ backend
+              await fetchOrderDetail();
 
               Alert.alert(
-                "Lỗi",
-                err.response?.data?.message || "Không thể hủy đơn hàng",
+                "Hủy đơn thành công",
+                "Đơn hàng của bạn đã được hủy.",
               );
+            } catch (error) {
+              console.log(
+                "❌ LỖI HỦY ĐƠN:",
+                error?.response?.data || error?.message,
+              );
+
+              const message =
+                error?.response?.data?.message ||
+                error?.message ||
+                "Không thể hủy đơn hàng";
+
+              Alert.alert("Không thể hủy đơn", message);
+            } finally {
+              setCancelling(false);
             }
           },
         },
@@ -352,6 +413,9 @@ export default function OrderDetailScreen({ navigation, route }) {
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }
       >
         {/* =================================================
             HERO / ORDER STATUS
@@ -425,7 +489,7 @@ export default function OrderDetailScreen({ navigation, route }) {
         <SectionHeader
           icon="location-outline"
           title="Địa chỉ nhận hàng"
-          action="Sửa"
+          // action="Sửa"
           onAction={() => {}}
         />
 

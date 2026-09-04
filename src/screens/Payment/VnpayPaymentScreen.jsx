@@ -6,140 +6,190 @@ import COLORS from "../../constants/colors";
 import { useCart } from "../../context/CartContext";
 
 export default function VnpayPaymentScreen({ navigation, route }) {
-  const { paymentUrl, orderId } = route.params;
+  const { paymentUrl, orderId, buyNow = false } = route.params || {};
 
   const { clearCart } = useCart();
 
   const [loading, setLoading] = useState(true);
   const [isHandled, setIsHandled] = useState(false);
 
-  const handleNavigationStateChange = async (navState) => {
-    const { url } = navState;
-
-    console.log("🌐 URL hiện tại:", url);
-
-    if (url.includes("/api/payment/vnpay/return") && !isHandled) {
-      console.log("🔥 BẮT CALLBACK VNPAY");
-
-      try {
-        const parsedUrl = new URL(url);
-
-        const responseCode = parsedUrl.searchParams.get("vnp_ResponseCode");
-
-        const transactionNo = parsedUrl.searchParams.get("vnp_TransactionNo");
-
-        const txnRef = parsedUrl.searchParams.get("vnp_TxnRef");
-
-        console.log("ResponseCode:", responseCode);
-        console.log("TransactionNo:", transactionNo);
-        console.log("TxnRef:", txnRef);
-
-        if (!responseCode) {
-          console.log("⚠️ Không có ResponseCode");
-          return;
-        }
-
-        setIsHandled(true);
-
-        // ==========================================
-        // GỌI BACKEND CALLBACK
-        // ==========================================
-
-        console.log("📡 Đang gửi callback tới Backend...");
-
-        const response = await fetch(url);
-
-        const result = await response.json();
-
-        console.log("📥 Kết quả Backend:", result);
-
-        // ==========================================
-        // BACKEND XÁC NHẬN THANH TOÁN THÀNH CÔNG
-        // ==========================================
-
-        if (result.success === true && result.data?.paymentStatus === "paid") {
-          console.log("✅ Backend xác nhận thanh toán thành công");
-
-          clearCart();
-
-          navigation.replace("PaymentResult", {
-            orderId: txnRef || orderId,
-            returnUrl: url,
-          });
-
-          return;
-        }
-
-        // ==========================================
-        // THANH TOÁN THẤT BẠI
-        // ==========================================
-
-        console.log("❌ Backend xác nhận thanh toán thất bại");
-
-        navigation.replace("PaymentResult", {
-          orderId: txnRef || orderId,
-          returnUrl: url,
-        });
-      } catch (error) {
-        console.log("🔥 LỖI GỌI CALLBACK BACKEND:", error);
-      }
-    }
-  };
-
+  /**
+   * =========================================================
+   * XỬ LÝ CALLBACK VNPAY
+   * =========================================================
+   */
   const handleVnpayCallback = async (url) => {
-    if (isHandled) return;
+    // Chặn callback bị gọi nhiều lần
+    if (isHandled) {
+      console.log("⚠️ Callback đã được xử lý, bỏ qua");
+      return;
+    }
 
     try {
-      setIsHandled(true);
+      console.log("======================================");
+      console.log("🔥 BẮT CALLBACK VNPAY");
+      console.log("======================================");
 
-      const parsedUrl = new URL(url);
+      console.log("🌐 Callback URL:");
+      console.log(url);
 
-      const responseCode = parsedUrl.searchParams.get("vnp_ResponseCode");
+      /**
+       * -------------------------------------------------------
+       * PARSE URL
+       * -------------------------------------------------------
+       */
+      const urlObj = new URL(url);
 
-      const transactionNo = parsedUrl.searchParams.get("vnp_TransactionNo");
+      const responseCode = urlObj.searchParams.get("vnp_ResponseCode");
 
-      const txnRef = parsedUrl.searchParams.get("vnp_TxnRef");
+      const transactionNo = urlObj.searchParams.get("vnp_TransactionNo");
+
+      const txnRef = urlObj.searchParams.get("vnp_TxnRef");
 
       console.log("ResponseCode:", responseCode);
       console.log("TransactionNo:", transactionNo);
       console.log("TxnRef:", txnRef);
 
-      // ==========================================
-      // GỌI BACKEND
-      // ==========================================
+      /**
+       * Không có ResponseCode
+       */
+      if (!responseCode) {
+        console.log("⚠️ Không tìm thấy vnp_ResponseCode");
+        return;
+      }
 
-      console.log("📡 Gọi Backend callback...");
+      /**
+       * Đánh dấu đã xử lý ngay trước khi gọi backend
+       * để tránh callback chạy nhiều lần.
+       */
+      setIsHandled(true);
+
+      /**
+       * =====================================================
+       * GỌI BACKEND CALLBACK
+       * =====================================================
+       */
+
+      console.log("📡 Đang gọi Backend callback...");
 
       const response = await fetch(url);
 
+      console.log("📡 Backend HTTP status:", response.status);
+
       const result = await response.json();
 
-      console.log("📥 Backend trả về:", result);
+      console.log("📥 Backend trả về:", JSON.stringify(result));
 
-      // ==========================================
-      // BACKEND XÁC NHẬN PAID
-      // ==========================================
+      /**
+       * =====================================================
+       * THANH TOÁN THÀNH CÔNG
+       * =====================================================
+       */
 
-      if (result.success === true && result.data?.paymentStatus === "paid") {
+      if (result?.success === true && result?.data?.paymentStatus === "paid") {
+        console.log("======================================");
         console.log("✅ BACKEND XÁC NHẬN THANH TOÁN THÀNH CÔNG");
+        console.log("======================================");
 
-        clearCart();
+        /**
+         * ---------------------------------------------------
+         * CHỈ XÓA CART KHI THANH TOÁN THÀNH CÔNG
+         * ---------------------------------------------------
+         *
+         * Nếu là Buy Now:
+         * → không cần xóa toàn bộ cart
+         *
+         * Nếu mua từ Cart:
+         * → xóa cart
+         */
+        if (!buyNow) {
+          try {
+            await clearCart();
+
+            console.log("🛒 Đã xóa giỏ hàng sau khi thanh toán thành công");
+          } catch (cartError) {
+            console.log(
+              "⚠️ Thanh toán thành công nhưng xóa cart lỗi:",
+              cartError,
+            );
+          }
+        }
+
+        /**
+         * ---------------------------------------------------
+         * CHUYỂN SANG PAYMENT RESULT
+         * ---------------------------------------------------
+         */
+
+        navigation.replace("PaymentResult", {
+          orderId: result?.data?.orderId || txnRef || orderId,
+
+          paymentStatus: "paid",
+
+          transactionNo: result?.data?.transactionNo || transactionNo,
+
+          returnUrl: url,
+        });
+
+        return;
       }
 
-      // ==========================================
-      // CHUYỂN PAYMENT RESULT
-      // ==========================================
+      /**
+       * =====================================================
+       * THANH TOÁN THẤT BẠI / HỦY
+       * =====================================================
+       */
+
+      console.log("======================================");
+      console.log("❌ BACKEND XÁC NHẬN THANH TOÁN THẤT BẠI");
+      console.log("======================================");
+
+      console.log("ResponseCode:", responseCode);
+
+      /**
+       * Không xóa Cart ở đây.
+       *
+       * Người dùng có thể quay lại Checkout
+       * và thanh toán lại.
+       */
 
       navigation.replace("PaymentResult", {
-        orderId: txnRef || orderId,
+        orderId: result?.data?.orderId || txnRef || orderId,
+
+        paymentStatus: "failed",
+
+        responseCode,
+
+        transactionNo,
+
         returnUrl: url,
       });
     } catch (error) {
-      console.log("❌ Lỗi callback VNPAY:", error);
+      console.log("======================================");
+      console.log("🔥 LỖI XỬ LÝ CALLBACK VNPAY");
+      console.log("======================================");
 
-      setIsHandled(false);
+      console.log(error);
+
+      /**
+       * Không xóa Cart.
+       *
+       * Nếu callback bị lỗi mạng:
+       * → giữ lại sản phẩm trong Cart.
+       */
+
+      navigation.replace("PaymentResult", {
+        orderId,
+        paymentStatus: "failed",
+      });
     }
   };
+
+  /**
+   * =========================================================
+   * UI
+   * =========================================================
+   */
 
   return (
     <View style={styles.container}>
@@ -147,21 +197,57 @@ export default function VnpayPaymentScreen({ navigation, route }) {
         source={{
           uri: paymentUrl,
         }}
+        /**
+         * ---------------------------------------------------
+         * LOAD START
+         * ---------------------------------------------------
+         */
         onLoadStart={() => {
           setLoading(true);
         }}
+        /**
+         * ---------------------------------------------------
+         * LOAD END
+         * ---------------------------------------------------
+         */
         onLoadEnd={() => {
           setLoading(false);
         }}
-        onNavigationStateChange={handleNavigationStateChange}
+        /**
+         * ---------------------------------------------------
+         * BẮT URL TRƯỚC KHI WEBVIEW LOAD
+         * ---------------------------------------------------
+         *
+         * Đây là nơi quan trọng nhất.
+         *
+         * Khi VNPAY redirect về:
+         *
+         * /api/payment/vnpay/return
+         *
+         * chúng ta KHÔNG cho WebView load trang JSON.
+         *
+         * Thay vào đó:
+         *
+         * 1. Lấy callback URL
+         * 2. Gửi URL tới Backend
+         * 3. Backend verify chữ ký
+         * 4. Backend cập nhật Order
+         * 5. Chuyển sang PaymentResult
+         */
         onShouldStartLoadWithRequest={(request) => {
           const { url } = request;
 
           console.log("🌐 WebView chuẩn bị load:", url);
 
-          if (url.includes("/api/payment/vnpay/return") && !isHandled) {
-            console.log("🔥 BẮT CALLBACK TRƯỚC KHI WEBVIEW LOAD");
+          /**
+           * Kiểm tra callback VNPAY
+           */
+          if (url.includes("/api/payment/vnpay/return")) {
+            console.log("🔥 PHÁT HIỆN CALLBACK VNPAY");
 
+            /**
+             * Không cho WebView load callback URL.
+             */
             handleVnpayCallback(url);
 
             return false;
@@ -169,11 +255,22 @@ export default function VnpayPaymentScreen({ navigation, route }) {
 
           return true;
         }}
+        /**
+         * ---------------------------------------------------
+         * WEBVIEW CONFIG
+         * ---------------------------------------------------
+         */
         startInLoadingState
         javaScriptEnabled
         domStorageEnabled
+        /**
+         * Cho phép cookies/session của VNPAY
+         */
+        thirdPartyCookiesEnabled
+        sharedCookiesEnabled
       />
-
+      /** * ===================================================== * LOADING *
+      ===================================================== */
       {loading && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={COLORS.primary} />
@@ -183,6 +280,12 @@ export default function VnpayPaymentScreen({ navigation, route }) {
   );
 }
 
+/**
+ * ===========================================================
+ * STYLES
+ * ===========================================================
+ */
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -191,6 +294,7 @@ const styles = StyleSheet.create({
 
   loadingContainer: {
     position: "absolute",
+
     top: 0,
     left: 0,
     right: 0,

@@ -511,7 +511,10 @@ export default function CheckoutScreen({ navigation, route }) {
 
   const handleSelectVoucher = () => {
     navigation.navigate("Voucher", {
+      subtotal,
       selectedVoucher,
+      isBuyNow,
+      items: checkoutItems,
     });
   };
 

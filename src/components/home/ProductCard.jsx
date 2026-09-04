@@ -13,11 +13,11 @@ import { getImageSource } from "../../utils/imageHelper";
 
 const { width } = Dimensions.get("window");
 
-
 export default function ProductCard({ item, favoriteIds, onToggleFavorite }) {
   const navigation = useNavigation();
-  //  
-  const isFavorite = Array.isArray(favoriteIds) && favoriteIds.includes(item?._id);
+  //
+  const isFavorite =
+    Array.isArray(favoriteIds) && favoriteIds.includes(item?._id);
 
   const handleToggleFavorite = () => {
     if (typeof onToggleFavorite !== "function") {
@@ -50,6 +50,14 @@ export default function ProductCard({ item, favoriteIds, onToggleFavorite }) {
           resizeMode="cover"
         />
 
+        {item?.isFeatured === true && (
+          <View style={styles.featuredBadge}>
+            <Ionicons name="star" size={1} color="#F5A400" />
+
+            <Text style={styles.featuredText}>SẢN PHẨM NỔI BẬT</Text>
+          </View>
+        )}
+
         <TouchableOpacity
           style={styles.favoriteButton}
           onPress={handleToggleFavorite}
@@ -69,32 +77,25 @@ export default function ProductCard({ item, favoriteIds, onToggleFavorite }) {
       <View style={styles.brandRow}>
         <Text style={styles.brandName}>{item?.brand?.name || "Brand"}</Text>
 
-        <Text style={styles.categoryName}>{item?.category?.name || "Category"}</Text>
+        <Text style={styles.categoryName}>
+          {item?.category?.name || "Category"}
+        </Text>
       </View>
 
-      <Text
-        style={styles.name}
-        numberOfLines={2}
-      >
+      <Text style={styles.name} numberOfLines={2}>
         {item?.name || "Sản phẩm"}
       </Text>
 
       <View style={styles.ratingRow}>
-        <Ionicons
-          name="star"
-          size={15}
-          color="#FFB800"
-        />
+        <Ionicons name="star" size={15} color="#FFB800" />
 
-        <Text style={styles.rating}>
-          {item?.rating || 0}
-        </Text>
+        <Text style={styles.rating}>{item?.rating || 0}</Text>
       </View>
 
       <Text style={styles.price}>
-        {((item?.discountPrice > 0 ? item?.discountPrice : item?.price) || 0).toLocaleString(
-          "vi-VN"
-        )}{" "}
+        {(
+          (item?.discountPrice > 0 ? item?.discountPrice : item?.price) || 0
+        ).toLocaleString("vi-VN")}{" "}
         đ
       </Text>
     </TouchableOpacity>
@@ -121,6 +122,31 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
+  },
+
+  featuredBadge: {
+    position: "absolute",
+    top: 10,
+    left: 10,
+
+    flexDirection: "row",
+    alignItems: "center",
+
+    backgroundColor: "#FFF1D6",
+
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+
+    borderRadius: 20,
+
+    gap: 5,
+  },
+
+  featuredText: {
+    color: "#B96A00",
+    fontSize: 10,
+    fontWeight: "800",
+    letterSpacing: 0.2,
   },
 
   favoriteButton: {
@@ -152,7 +178,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: "#999",
   },
-
 
   //
   // category: {

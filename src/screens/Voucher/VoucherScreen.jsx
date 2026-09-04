@@ -50,26 +50,56 @@ export default function VoucherScreen({ navigation, route }) {
   };
 
   const handleApplyVoucher = async () => {
-    if (!selectedVoucher) return;
+    if (!selectedVoucher) {
+      Alert.alert("Thông báo", "Vui lòng chọn voucher");
+      return;
+    }
 
     try {
+      console.log("🎫 VOUCHER ĐƯỢC CHỌN:", selectedVoucher);
+
+      console.log("📤 DATA GỬI VALIDATE:", {
+        code: selectedVoucher.code,
+        subtotal,
+      });
+
       const response = await validateVoucherApi({
         code: selectedVoucher.code,
         subtotal,
       });
 
+      console.log("📥 RESPONSE VALIDATE VOUCHER:", response);
+
       const voucher = {
         ...selectedVoucher,
-        discount: response.data.discount,
+        discount: Number(response.data?.discount || 0),
       };
 
-      route.params?.onSelectVoucher?.(voucher);
+      console.log("✅ VOUCHER SAU KHI VALIDATE:", voucher);
 
-      navigation.goBack();
+      // QUAN TRỌNG:
+      // Không navigate sang Checkout mới.
+      // Pop Voucher ra và quay lại Checkout cũ.
+      navigation.popTo("Checkout", {
+        selectedVoucher: voucher,
+        isBuyNow,
+        items,
+      });
     } catch (error) {
+      console.log(
+        "❌ LỖI VALIDATE VOUCHER:",
+        error?.response?.data || error?.message,
+      );
+
+      console.log("❌ STATUS:", error?.response?.status);
+
+      console.log("❌ REQUEST DATA:", error?.config?.data);
+
       Alert.alert(
         "Thông báo",
-        error.response?.data?.message || "Voucher không hợp lệ",
+        error?.response?.data?.message ||
+          error?.message ||
+          "Voucher không hợp lệ",
       );
     }
   };

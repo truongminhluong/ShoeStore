@@ -5,15 +5,11 @@ import api from "../utils/api";
 // =========================
 
 export const createOrderApi = async (orderData, token) => {
-  const response = await api.post(
-    "/orders",
-    orderData,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const response = await api.post("/orders", orderData, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   return response.data;
 };
@@ -23,14 +19,11 @@ export const createOrderApi = async (orderData, token) => {
 // =========================
 
 export const getMyOrdersApi = async (token) => {
-  const response = await api.get(
-    "/orders",
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const response = await api.get("/orders", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   return response.data;
 };
@@ -39,18 +32,12 @@ export const getMyOrdersApi = async (token) => {
 // LẤY CHI TIẾT ĐƠN HÀNG
 // =========================
 
-export const getMyOrderDetailApi = async (
-  orderId,
-  token
-) => {
-  const response = await api.get(
-    `/orders/${orderId}`,
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+export const getMyOrderDetailApi = async (orderId, token) => {
+  const response = await api.get(`/orders/${orderId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   return response.data;
 };
@@ -59,10 +46,15 @@ export const getMyOrderDetailApi = async (
 // HỦY ĐƠN HÀNG
 // =========================
 
-export const cancelOrderApi = async (
-  orderId,
-  token
-) => {
+export const cancelOrderApi = async (orderId, token) => {
+  if (!orderId) {
+    throw new Error("Thiếu mã đơn hàng");
+  }
+
+  if (!token) {
+    throw new Error("Thiếu token đăng nhập");
+  }
+
   const response = await api.put(
     `/orders/${orderId}/cancel`,
     {},
@@ -70,7 +62,7 @@ export const cancelOrderApi = async (
       headers: {
         Authorization: `Bearer ${token}`,
       },
-    }
+    },
   );
 
   return response.data;
