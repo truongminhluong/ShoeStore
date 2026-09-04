@@ -1,7 +1,11 @@
 import React, { useMemo, useState } from "react";
 import {
+<<<<<<< Updated upstream
     View,
     Text,
+=======
+    View, Text, TouchableOpacity, ScrollView,
+>>>>>>> Stashed changes
     StyleSheet,
     FlatList,
     ActivityIndicator,
@@ -20,9 +24,20 @@ import useNewestProductsViewModel from "../../viewmodels/useNewestProductsViewMo
 
 import { useFavorite } from "../../context/FavoriteContext";
 
+<<<<<<< Updated upstream
 // ==========================================
 // NORMALIZE TEXT
 // ==========================================
+=======
+const normalizeText = (value) =>
+    String(value || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+
+const AllProductsScreen = ({ navigation, route }) => {
+>>>>>>> Stashed changes
 
 const normalizeText = (value) =>
     String(value || "")
@@ -55,14 +70,21 @@ const AllProductsScreen = ({ navigation, route }) => {
         toggleFavorite,
     } = useFavorite();
 
+<<<<<<< Updated upstream
     // ==========================================
     // SEARCH
     // ==========================================
+=======
+    // =========================
+    // SEARCH TEXT
+    // =========================
+>>>>>>> Stashed changes
 
     const [searchText, setSearchText] = useState(
         route?.params?.searchText || ""
     );
 
+<<<<<<< Updated upstream
     // ==========================================
     // CATEGORY
     // ==========================================
@@ -76,10 +98,18 @@ const AllProductsScreen = ({ navigation, route }) => {
 
     const filteredProducts = useMemo(() => {
 
+=======
+    const [selectedCategory, setSelectedCategory] =
+        useState("Tất cả");
+
+
+    const filteredProducts = useMemo(() => {
+>>>>>>> Stashed changes
         const keyword = normalizeText(searchText);
 
         return products.filter((item) => {
 
+<<<<<<< Updated upstream
             // -----------------------------
             // SEARCH
             // -----------------------------
@@ -91,23 +121,44 @@ const AllProductsScreen = ({ navigation, route }) => {
                 ${item?.category?.name || ""}
                 `
             );
+=======
+            // =========================
+            // TÌM KIẾM
+            // =========================
+
+            const searchContent = normalizeText(`
+            ${item?.name || ""}
+            ${item?.brand?.name || ""}
+            ${item?.category?.name || ""}
+        `);
+>>>>>>> Stashed changes
 
             const matchesSearch =
                 !keyword ||
                 searchContent.includes(keyword);
 
+<<<<<<< Updated upstream
             // -----------------------------
             // CATEGORY
             // -----------------------------
+=======
+            // =========================
+            // CATEGORY
+            // =========================
+>>>>>>> Stashed changes
 
             const matchesCategory =
                 selectedCategory === "Tất cả" ||
                 item?.category?.name === selectedCategory;
 
+<<<<<<< Updated upstream
             return (
                 matchesSearch &&
                 matchesCategory
             );
+=======
+            return matchesSearch && matchesCategory;
+>>>>>>> Stashed changes
         });
 
     }, [
@@ -116,14 +167,21 @@ const AllProductsScreen = ({ navigation, route }) => {
         selectedCategory,
     ]);
 
+<<<<<<< Updated upstream
     // ==========================================
     // CLEAR SEARCH
     // ==========================================
+=======
+    // =========================
+    // XÓA SEARCH
+    // =========================
+>>>>>>> Stashed changes
 
     const handleClearSearch = () => {
         setSearchText("");
     };
 
+<<<<<<< Updated upstream
     // ==========================================
     // CLEAR FILTER
     // ==========================================
@@ -136,8 +194,27 @@ const AllProductsScreen = ({ navigation, route }) => {
     // ==========================================
     // LOADING
     // ==========================================
+=======
+
+    // =========================
+    // XÓA TOÀN BỘ FILTER
+    // =========================
+
+    const clearFilters = () => {
+
+        setSearchText("");
+
+        setSelectedCategory("Tất cả");
+    };
+
+
+    // =========================
+    // LOADING
+    // =========================
+>>>>>>> Stashed changes
 
     if (loading) {
+
         return (
             <SafeAreaView style={styles.loading}>
 
@@ -183,12 +260,32 @@ const AllProductsScreen = ({ navigation, route }) => {
 
             {/* CATEGORY */}
 
+            {/* SEARCH */}
+
+            <SearchBar
+
+                value={searchText}
+                onChangeText={setSearchText}
+                onClear={handleClearSearch}
+
+                onFilterPress={clearFilters}
+
+                hasActiveFilters={
+                    Boolean(
+                        searchText.trim() ||
+                        selectedCategory !== "Tất cả"
+                    )
+                }
+            />
+
+
             <ProductFilterBar
                 total={filteredProducts.length}
                 selectedCategory={selectedCategory}
                 onSelectCategory={setSelectedCategory}
             />
 
+<<<<<<< Updated upstream
             {/* ==========================================
                 PRODUCT LIST
             ========================================== */}
@@ -248,7 +345,65 @@ const AllProductsScreen = ({ navigation, route }) => {
                     </View>
                 )}
             />
+=======
+>>>>>>> Stashed changes
 
+
+            {/* KHÔNG TÌM THẤY */}
+
+            {filteredProducts.length === 0 ? (
+
+                <View style={styles.emptyContainer}>
+
+                    <Text style={styles.emptyTitle}>
+                        Không tìm thấy sản phẩm
+                    </Text>
+
+                    {/* <Text style={styles.emptyText}>
+                        Không có sản phẩm phù hợp với từ khóa "{searchText}"
+                    </Text> */}
+
+                </View>
+
+            ) : (
+
+                <FlatList
+                    data={filteredProducts}
+
+                    keyExtractor={(item) =>
+                        item._id
+                    }
+
+                    numColumns={2}
+
+                    showsVerticalScrollIndicator={false}
+
+                    contentContainerStyle={
+                        styles.list
+                    }
+
+                    columnWrapperStyle={
+                        styles.row
+                    }
+
+                    renderItem={({ item }) => (
+
+                        <ProductCard
+                            item={item}
+
+                            favoriteIds={
+                                favoriteIds
+                            }
+
+                            onToggleFavorite={
+                                toggleFavorite
+                            }
+                        />
+
+                    )}
+                />
+
+            )}
         </SafeAreaView>
     );
 };
@@ -305,6 +460,27 @@ const styles = StyleSheet.create({
     row: {
         justifyContent: "space-between",
         marginBottom: 16,
+    },
+    emptyContainer: {
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        paddingHorizontal: 30,
+        // paddingTop: 30,
+    },
+
+    emptyTitle: {
+        fontSize: 20,
+        fontWeight: "700",
+        color: COLORS.black,
+        marginBottom: 8,
+    },
+
+    emptyText: {
+        fontSize: 14,
+        color: "#777",
+        textAlign: "center",
+        lineHeight: 22,
     },
 
     // ==========================================

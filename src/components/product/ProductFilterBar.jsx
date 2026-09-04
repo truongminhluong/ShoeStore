@@ -68,7 +68,11 @@ const ProductFilterBar = ({
             {/* Danh mục */}
             <ScrollView
                 horizontal
+<<<<<<< Updated upstream
                 style={{ maxHeight: 75 }}
+=======
+                style={{ maxHeight: 75, marginBottom: 10 }}
+>>>>>>> Stashed changes
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.categoryContainer}
             >
