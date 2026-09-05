@@ -127,7 +127,6 @@ export default function LoginScreen({ navigation }) {
                 BACKGROUND DECORATION
             ================================================= */}
 
-<<<<<<< Updated upstream
             <View style={styles.backgroundDecor}>
               {/* Dot pattern */}
               <View style={styles.dotPattern}>
@@ -135,10 +134,6 @@ export default function LoginScreen({ navigation }) {
                   <View key={index} style={styles.dot} />
                 ))}
               </View>
-=======
-            <View style={styles.header}>
-              <Text style={styles.logo}>RYDESTORE</Text>
->>>>>>> Stashed changes
 
               {/* Bottom soft shapes */}
               <View style={styles.bottomShapeOne} />

@@ -1,225 +1,284 @@
 import React from "react";
+
 import {
-    View,
-    Text,
-    TouchableOpacity,
-    ScrollView,
-    StyleSheet,
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  StyleSheet,
 } from "react-native";
-import useCategoryViewModel from "../../viewmodels/useCategoryViewModel";
 
 import { Ionicons } from "@expo/vector-icons";
+
+import useCategoryViewModel from "../../viewmodels/useCategoryViewModel";
 
 import COLORS from "../../constants/colors";
 import FONTS from "../../constants/fonts";
 
 const ProductFilterBar = ({
-    total = 0,
-    selectedCategory = "Tất cả",
-    onSelectCategory,
-    onFilterPress,
-    onSortPress,
+  total = 0,
+  selectedCategory = "Tất cả",
+  onSelectCategory,
+  onFilterPress,
+  onSortPress,
 }) => {
-    const {
-        categories,
-        loading,
-    } = useCategoryViewModel();
-    return (
-        <>
-            {/* Tiêu đề */}
-            <View style={styles.header}>
-                <View style={styles.left}>
-                    <Text style={styles.title}>
-                        Giày Mới Nhất
-                    </Text>
+  const { categories, loading } = useCategoryViewModel();
 
-                    <View style={styles.badge}>
-                        <Text style={styles.badgeText}>
-                            {total}
-                        </Text>
-                    </View>
-                </View>
+  return (
+    <>
+      {/* ==========================================
+                HEADER
+            ========================================== */}
 
-                <View style={styles.right}>
-                    <TouchableOpacity
-                        style={styles.iconButton}
-                        onPress={onFilterPress}
-                    >
-                        <Ionicons
-                            name="options"
-                            size={18}
-                            color={COLORS.gray}
-                        />
-                    </TouchableOpacity>
+      <View style={styles.header}>
+        <View style={styles.left}>
+          <Text style={styles.title}>Giày Mới Nhất</Text>
 
-                    <TouchableOpacity
-                        style={styles.iconButton}
-                        onPress={onSortPress}
-                    >
-                        <Ionicons
-                            name="shuffle-outline"
-                            size={18}
-                            color={COLORS.gray}
-                        />
-                    </TouchableOpacity>
-                </View>
-            </View>
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{total}</Text>
+          </View>
+        </View>
 
-            {/* Danh mục */}
-            <ScrollView
-                horizontal
-<<<<<<< Updated upstream
-                style={{ maxHeight: 75 }}
-=======
-                style={{ maxHeight: 75, marginBottom: 10 }}
->>>>>>> Stashed changes
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.categoryContainer}
+        <View style={styles.right}>
+          {/* FILTER */}
+
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={onFilterPress}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="options" size={18} color={COLORS.gray} />
+          </TouchableOpacity>
+
+          {/* SORT */}
+
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={onSortPress}
+            activeOpacity={0.7}
+          >
+            <Ionicons name="shuffle-outline" size={18} color={COLORS.gray} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* ==========================================
+                CATEGORY
+            ========================================== */}
+
+      <ScrollView
+        horizontal
+        style={styles.categoryScroll}
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.categoryContainer}
+      >
+        {/* TẤT CẢ */}
+
+        <TouchableOpacity
+          style={[
+            styles.categoryButton,
+            selectedCategory === "Tất cả" && styles.activeButton,
+          ]}
+          onPress={() => onSelectCategory("Tất cả")}
+          activeOpacity={0.8}
+        >
+          <Text
+            style={[
+              styles.categoryText,
+              selectedCategory === "Tất cả" && styles.activeText,
+            ]}
+          >
+            Tất cả
+          </Text>
+        </TouchableOpacity>
+
+        {/* CÁC DANH MỤC */}
+
+        {!loading &&
+          categories?.map((item) => (
+            <TouchableOpacity
+              key={item._id}
+              style={[
+                styles.categoryButton,
+                selectedCategory === item.name && styles.activeButton,
+              ]}
+              onPress={() => onSelectCategory(item.name)}
+              activeOpacity={0.8}
             >
-
-                <TouchableOpacity
-                    style={[
-                        styles.categoryButton,
-                        selectedCategory === "Tất cả" &&
-                        styles.activeButton,
-                    ]}
-                    onPress={() => onSelectCategory("Tất cả")}
-                >
-                    <Text
-                        style={[
-                            styles.categoryText,
-                            selectedCategory === "Tất cả" &&
-                            styles.activeText,
-                        ]}
-                    >
-                        Tất cả
-                    </Text>
-                </TouchableOpacity>
-
-                {categories.map((item) => (
-                    <TouchableOpacity
-                        key={item._id}
-                        style={[
-                            styles.categoryButton,
-                            selectedCategory === item.name &&
-                            styles.activeButton,
-                        ]}
-                        onPress={() =>
-                            onSelectCategory(item.name)
-                        }
-                    >
-                        <Text
-                            style={[
-                                styles.categoryText,
-                                selectedCategory === item.name &&
-                                styles.activeText,
-                            ]}
-                        >
-                            {item.name}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-
-            </ScrollView>
-        </>
-    );
+              <Text
+                style={[
+                  styles.categoryText,
+                  selectedCategory === item.name && styles.activeText,
+                ]}
+              >
+                {item.name}
+              </Text>
+            </TouchableOpacity>
+          ))}
+      </ScrollView>
+    </>
+  );
 };
 
 export default ProductFilterBar;
 
+// ==========================================
+// STYLES
+// ==========================================
+
 const styles = StyleSheet.create({
-    header: {
-        marginTop: 15,
-        paddingHorizontal: 16,
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
-    },
+  // ==========================================
+  // HEADER
+  // ==========================================
 
-    left: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
+  header: {
+    marginTop: 15,
+    paddingHorizontal: 16,
 
-    title: {
-        fontSize: 30,
-        fontFamily: FONTS.bold,
-        color: COLORS.black,
-        fontWeight: "700",
-    },
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
 
-    badge: {
-        marginLeft: 10,
+  // ==========================================
+  // LEFT
+  // ==========================================
 
-        width: 24,
-        height: 24,
+  left: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexShrink: 1,
+  },
 
-        borderRadius: 12,
+  // ==========================================
+  // TITLE
+  // ==========================================
 
-        backgroundColor: COLORS.primary,
+  title: {
+    fontSize: 30,
+    fontFamily: FONTS.bold,
+    fontWeight: "700",
+    color: COLORS.black,
+  },
 
-        justifyContent: "center",
-        alignItems: "center",
-    },
+  // ==========================================
+  // BADGE
+  // ==========================================
 
-    badgeText: {
-        color: COLORS.white,
-        fontSize: 11,
-        fontFamily: FONTS.bold,
-    },
+  badge: {
+    marginLeft: 10,
 
-    right: {
-        flexDirection: "row",
-        alignItems: "center",
-    },
+    width: 24,
+    height: 24,
 
-    iconButton: {
-        width: 40,
-        height: 40,
+    borderRadius: 12,
 
-        marginLeft: 8,
+    backgroundColor: COLORS.primary,
 
-        borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-        backgroundColor: "#EEF1FF",
+  badgeText: {
+    color: COLORS.white,
+    fontSize: 11,
+    fontFamily: FONTS.bold,
+  },
 
-        justifyContent: "center",
-        alignItems: "center",
-    },
+  // ==========================================
+  // RIGHT
+  // ==========================================
 
-    categoryContainer: {
-        paddingHorizontal: 16,
-        marginTop: 18,
-        paddingBottom: 8,
-    },
+  right: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
-    categoryButton: {
-        height: 38,
+  // ==========================================
+  // ICON BUTTON
+  // ==========================================
 
-        paddingHorizontal: 18,
+  iconButton: {
+    width: 40,
+    height: 40,
 
-        borderRadius: 20,
+    marginLeft: 8,
 
-        backgroundColor: "#F3F4F6",
+    borderRadius: 12,
 
-        justifyContent: "center",
-        alignItems: "center",
+    backgroundColor: "#EEF1FF",
 
-        marginRight: 10,
+    justifyContent: "center",
+    alignItems: "center",
+  },
 
-    },
-    activeButton: {
-        backgroundColor: COLORS.primary,
-    },
+  // ==========================================
+  // CATEGORY SCROLL
+  // ==========================================
 
-    categoryText: {
-        fontSize: 14,
-        fontFamily: FONTS.medium,
-        color: COLORS.black,
-    },
+  categoryScroll: {
+    maxHeight: 75,
+    marginBottom: 10,
+  },
 
-    activeText: {
-        color: COLORS.white,
-        fontFamily: FONTS.bold,
-    },
+  // ==========================================
+  // CATEGORY CONTAINER
+  // ==========================================
+
+  categoryContainer: {
+    paddingHorizontal: 16,
+
+    marginTop: 18,
+
+    paddingBottom: 8,
+  },
+
+  // ==========================================
+  // CATEGORY BUTTON
+  // ==========================================
+
+  categoryButton: {
+    height: 38,
+
+    paddingHorizontal: 18,
+
+    borderRadius: 20,
+
+    backgroundColor: "#F3F4F6",
+
+    justifyContent: "center",
+    alignItems: "center",
+
+    marginRight: 10,
+  },
+
+  // ==========================================
+  // ACTIVE CATEGORY
+  // ==========================================
+
+  activeButton: {
+    backgroundColor: COLORS.primary,
+  },
+
+  // ==========================================
+  // CATEGORY TEXT
+  // ==========================================
+
+  categoryText: {
+    fontSize: 14,
+
+    fontFamily: FONTS.medium,
+
+    color: COLORS.black,
+  },
+
+  // ==========================================
+  // ACTIVE TEXT
+  // ==========================================
+
+  activeText: {
+    color: COLORS.white,
+
+    fontFamily: FONTS.bold,
+  },
 });

@@ -1,14 +1,11 @@
 import React, { useMemo, useState } from "react";
+
 import {
-<<<<<<< Updated upstream
-    View,
-    Text,
-=======
-    View, Text, TouchableOpacity, ScrollView,
->>>>>>> Stashed changes
-    StyleSheet,
-    FlatList,
-    ActivityIndicator,
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  ActivityIndicator,
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -24,388 +21,198 @@ import useNewestProductsViewModel from "../../viewmodels/useNewestProductsViewMo
 
 import { useFavorite } from "../../context/FavoriteContext";
 
-<<<<<<< Updated upstream
 // ==========================================
 // NORMALIZE TEXT
 // ==========================================
-=======
-const normalizeText = (value) =>
-    String(value || "")
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .trim();
-
-const AllProductsScreen = ({ navigation, route }) => {
->>>>>>> Stashed changes
 
 const normalizeText = (value) =>
-    String(value || "")
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .trim();
+  String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
 
 // ==========================================
 // SCREEN
 // ==========================================
 
 const AllProductsScreen = ({ navigation, route }) => {
+  // ==========================================
+  // PRODUCTS
+  // ==========================================
 
-    // ==========================================
-    // PRODUCTS
-    // ==========================================
+  const { products, loading } = useNewestProductsViewModel();
 
-    const {
-        products,
-        loading,
-    } = useNewestProductsViewModel();
+  // ==========================================
+  // FAVORITE
+  // ==========================================
 
-    // ==========================================
-    // FAVORITE
-    // ==========================================
+  const { favoriteIds, toggleFavorite } = useFavorite();
 
-    const {
-        favoriteIds,
-        toggleFavorite,
-    } = useFavorite();
+  // ==========================================
+  // SEARCH
+  // ==========================================
 
-<<<<<<< Updated upstream
-    // ==========================================
-    // SEARCH
-    // ==========================================
-=======
-    // =========================
-    // SEARCH TEXT
-    // =========================
->>>>>>> Stashed changes
+  const [searchText, setSearchText] = useState(route?.params?.searchText || "");
 
-    const [searchText, setSearchText] = useState(
-        route?.params?.searchText || ""
-    );
+  // ==========================================
+  // CATEGORY
+  // ==========================================
 
-<<<<<<< Updated upstream
-    // ==========================================
-    // CATEGORY
-    // ==========================================
+  const [selectedCategory, setSelectedCategory] = useState("Tất cả");
 
-    const [selectedCategory, setSelectedCategory] =
-        useState("Tất cả");
+  // ==========================================
+  // FILTER PRODUCTS
+  // ==========================================
 
-    // ==========================================
-    // FILTER PRODUCTS
-    // ==========================================
+  const filteredProducts = useMemo(() => {
+    const keyword = normalizeText(searchText);
 
-    const filteredProducts = useMemo(() => {
+    return products.filter((item) => {
+      // ==========================================
+      // SEARCH
+      // ==========================================
 
-=======
-    const [selectedCategory, setSelectedCategory] =
-        useState("Tất cả");
-
-
-    const filteredProducts = useMemo(() => {
->>>>>>> Stashed changes
-        const keyword = normalizeText(searchText);
-
-        return products.filter((item) => {
-
-<<<<<<< Updated upstream
-            // -----------------------------
-            // SEARCH
-            // -----------------------------
-
-            const searchContent = normalizeText(
-                `
+      const searchContent = normalizeText(
+        `
                 ${item?.name || ""}
                 ${item?.brand?.name || ""}
                 ${item?.category?.name || ""}
-                `
-            );
-=======
-            // =========================
-            // TÌM KIẾM
-            // =========================
+                `,
+      );
 
-            const searchContent = normalizeText(`
-            ${item?.name || ""}
-            ${item?.brand?.name || ""}
-            ${item?.category?.name || ""}
-        `);
->>>>>>> Stashed changes
+      const matchesSearch = !keyword || searchContent.includes(keyword);
 
-            const matchesSearch =
-                !keyword ||
-                searchContent.includes(keyword);
+      // ==========================================
+      // CATEGORY
+      // ==========================================
 
-<<<<<<< Updated upstream
-            // -----------------------------
-            // CATEGORY
-            // -----------------------------
-=======
-            // =========================
-            // CATEGORY
-            // =========================
->>>>>>> Stashed changes
+      const matchesCategory =
+        selectedCategory === "Tất cả" ||
+        item?.category?.name === selectedCategory;
 
-            const matchesCategory =
-                selectedCategory === "Tất cả" ||
-                item?.category?.name === selectedCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [products, searchText, selectedCategory]);
 
-<<<<<<< Updated upstream
-            return (
-                matchesSearch &&
-                matchesCategory
-            );
-=======
-            return matchesSearch && matchesCategory;
->>>>>>> Stashed changes
-        });
+  // ==========================================
+  // CLEAR SEARCH
+  // ==========================================
 
-    }, [
-        products,
-        searchText,
-        selectedCategory,
-    ]);
+  const handleClearSearch = () => {
+    setSearchText("");
+  };
 
-<<<<<<< Updated upstream
-    // ==========================================
-    // CLEAR SEARCH
-    // ==========================================
-=======
-    // =========================
-    // XÓA SEARCH
-    // =========================
->>>>>>> Stashed changes
+  // ==========================================
+  // CLEAR ALL FILTERS
+  // ==========================================
 
-    const handleClearSearch = () => {
-        setSearchText("");
-    };
+  const clearFilters = () => {
+    setSearchText("");
+    setSelectedCategory("Tất cả");
+  };
 
-<<<<<<< Updated upstream
-    // ==========================================
-    // CLEAR FILTER
-    // ==========================================
+  // ==========================================
+  // ACTIVE FILTER
+  // ==========================================
 
-    const clearFilters = () => {
-        setSearchText("");
-        setSelectedCategory("Tất cả");
-    };
+  const hasActiveFilters = Boolean(
+    searchText.trim() || selectedCategory !== "Tất cả",
+  );
 
-    // ==========================================
-    // LOADING
-    // ==========================================
-=======
+  // ==========================================
+  // LOADING
+  // ==========================================
 
-    // =========================
-    // XÓA TOÀN BỘ FILTER
-    // =========================
-
-    const clearFilters = () => {
-
-        setSearchText("");
-
-        setSelectedCategory("Tất cả");
-    };
-
-
-    // =========================
-    // LOADING
-    // =========================
->>>>>>> Stashed changes
-
-    if (loading) {
-
-        return (
-            <SafeAreaView style={styles.loading}>
-
-                <ActivityIndicator
-                    size="large"
-                    color={COLORS.primary}
-                />
-
-            </SafeAreaView>
-        );
-    }
-
-    // ==========================================
-    // RENDER
-    // ==========================================
-
+  if (loading) {
     return (
-        <SafeAreaView
-            style={styles.container}
-            edges={["top"]}
-        >
+      <SafeAreaView style={styles.loading}>
+        <ActivityIndicator size="large" color={COLORS.primary} />
+      </SafeAreaView>
+    );
+  }
 
-            {/* HEADER */}
+  // ==========================================
+  // RENDER
+  // ==========================================
 
-            <ProductHeader
-                navigation={navigation}
-            />
+  return (
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      {/* ==========================================
+                HEADER
+            ========================================== */}
 
-            {/* SEARCH */}
+      <ProductHeader navigation={navigation} />
 
-            <SearchBar
-                value={searchText}
-                onChangeText={setSearchText}
-                onClear={handleClearSearch}
-                onSearch={() => { }}
-                hasActiveFilters={
-                    Boolean(
-                        searchText.trim() ||
-                        selectedCategory !== "Tất cả"
-                    )
-                }
-            />
+      {/* ==========================================
+                SEARCH
+            ========================================== */}
 
-            {/* CATEGORY */}
+      <SearchBar
+        value={searchText}
+        onChangeText={setSearchText}
+        onClear={handleClearSearch}
+        onSearch={() => {}}
+        onFilterPress={clearFilters}
+        hasActiveFilters={hasActiveFilters}
+      />
 
-            {/* SEARCH */}
+      {/* ==========================================
+                CATEGORY FILTER
+            ========================================== */}
 
-            <SearchBar
+      <ProductFilterBar
+        total={filteredProducts.length}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+      />
 
-                value={searchText}
-                onChangeText={setSearchText}
-                onClear={handleClearSearch}
-
-                onFilterPress={clearFilters}
-
-                hasActiveFilters={
-                    Boolean(
-                        searchText.trim() ||
-                        selectedCategory !== "Tất cả"
-                    )
-                }
-            />
-
-
-            <ProductFilterBar
-                total={filteredProducts.length}
-                selectedCategory={selectedCategory}
-                onSelectCategory={setSelectedCategory}
-            />
-
-<<<<<<< Updated upstream
-            {/* ==========================================
+      {/* ==========================================
                 PRODUCT LIST
             ========================================== */}
 
-            <FlatList
-                data={filteredProducts}
+      <FlatList
+        data={filteredProducts}
+        keyExtractor={(item, index) =>
+          item?._id?.toString() || item?.id?.toString() || index.toString()
+        }
+        numColumns={2}
+        showsVerticalScrollIndicator={false}
+        style={styles.flatList}
+        contentContainerStyle={styles.list}
+        columnWrapperStyle={styles.row}
+        renderItem={({ item }) => (
+          <ProductCard
+            item={item}
+            favoriteIds={favoriteIds}
+            onToggleFavorite={toggleFavorite}
+          />
+        )}
+        // ==========================================
+        // EMPTY
+        // ==========================================
 
-                keyExtractor={(item) =>
-                    item._id
-                }
+        ListEmptyComponent={() => (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyIcon}>🔍</Text>
 
-                numColumns={2}
+            <Text style={styles.emptyTitle}>Không tìm thấy sản phẩm</Text>
 
-                showsVerticalScrollIndicator={false}
-
-                // Quan trọng
-                style={styles.flatList}
-
-                // Không căn giữa theo chiều dọc
-                contentContainerStyle={styles.list}
-
-                columnWrapperStyle={styles.row}
-
-                renderItem={({ item }) => (
-                    <ProductCard
-                        item={item}
-                        favoriteIds={favoriteIds}
-                        onToggleFavorite={
-                            toggleFavorite
-                        }
-                    />
-                )}
-
-                // ==========================================
-                // EMPTY
-                // ==========================================
-
-                ListEmptyComponent={() => (
-                    <View style={styles.emptyContainer}>
-
-                        <Text style={styles.emptyTitle}>
-                            Không tìm thấy sản phẩm
-                        </Text>
-
-                        {searchText.trim() ? (
-                            <Text style={styles.emptyText}>
-                                Không có sản phẩm phù hợp với từ khóa
-                                {" "}
-                                "{searchText}"
-                            </Text>
-                        ) : (
-                            <Text style={styles.emptyText}>
-                                Không có sản phẩm trong danh mục này
-                            </Text>
-                        )}
-
-                    </View>
-                )}
-            />
-=======
->>>>>>> Stashed changes
-
-
-            {/* KHÔNG TÌM THẤY */}
-
-            {filteredProducts.length === 0 ? (
-
-                <View style={styles.emptyContainer}>
-
-                    <Text style={styles.emptyTitle}>
-                        Không tìm thấy sản phẩm
-                    </Text>
-
-                    {/* <Text style={styles.emptyText}>
-                        Không có sản phẩm phù hợp với từ khóa "{searchText}"
-                    </Text> */}
-
-                </View>
-
+            {searchText.trim() ? (
+              <Text style={styles.emptyText}>
+                Không có sản phẩm phù hợp với từ khóa{" "}
+                <Text style={styles.keyword}>"{searchText}"</Text>
+              </Text>
             ) : (
-
-                <FlatList
-                    data={filteredProducts}
-
-                    keyExtractor={(item) =>
-                        item._id
-                    }
-
-                    numColumns={2}
-
-                    showsVerticalScrollIndicator={false}
-
-                    contentContainerStyle={
-                        styles.list
-                    }
-
-                    columnWrapperStyle={
-                        styles.row
-                    }
-
-                    renderItem={({ item }) => (
-
-                        <ProductCard
-                            item={item}
-
-                            favoriteIds={
-                                favoriteIds
-                            }
-
-                            onToggleFavorite={
-                                toggleFavorite
-                            }
-                        />
-
-                    )}
-                />
-
+              <Text style={styles.emptyText}>
+                Không có sản phẩm trong danh mục này
+              </Text>
             )}
-        </SafeAreaView>
-    );
+          </View>
+        )}
+      />
+    </SafeAreaView>
+  );
 };
 
 export default AllProductsScreen;
@@ -415,99 +222,87 @@ export default AllProductsScreen;
 // ==========================================
 
 const styles = StyleSheet.create({
+  // ==========================================
+  // CONTAINER
+  // ==========================================
 
-    // ==========================================
-    // CONTAINER
-    // ==========================================
+  container: {
+    flex: 1,
+    backgroundColor: COLORS.background,
+  },
 
-    container: {
-        flex: 1,
-        backgroundColor: COLORS.background,
-    },
+  // ==========================================
+  // LOADING
+  // ==========================================
 
-    // ==========================================
-    // LOADING
-    // ==========================================
+  loading: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: COLORS.background,
+  },
 
-    loading: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-    },
+  // ==========================================
+  // FLATLIST
+  // ==========================================
 
-    // ==========================================
-    // FLATLIST
-    // ==========================================
+  flatList: {
+    flex: 1,
+  },
 
-    flatList: {
-        flex: 1,
-    },
+  // ==========================================
+  // LIST
+  // ==========================================
 
-    list: {
-        paddingHorizontal: 16,
-        paddingTop: 10,
-        paddingBottom: 30,
+  list: {
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 30,
+  },
 
-        // Không được dùng:
-        // flexGrow: 1
-        // justifyContent: "center"
-    },
+  // ==========================================
+  // ROW
+  // ==========================================
 
-    // ==========================================
-    // ROW
-    // ==========================================
+  row: {
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
 
-    row: {
-        justifyContent: "space-between",
-        marginBottom: 16,
-    },
-    emptyContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        paddingHorizontal: 30,
-        // paddingTop: 30,
-    },
+  // ==========================================
+  // EMPTY
+  // ==========================================
 
-    emptyTitle: {
-        fontSize: 20,
-        fontWeight: "700",
-        color: COLORS.black,
-        marginBottom: 8,
-    },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 30,
+    paddingTop: 80,
+  },
 
-    emptyText: {
-        fontSize: 14,
-        color: "#777",
-        textAlign: "center",
-        lineHeight: 22,
-    },
+  emptyIcon: {
+    fontSize: 38,
+    marginBottom: 14,
+  },
 
-    // ==========================================
-    // EMPTY
-    // ==========================================
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: COLORS.black,
+    marginBottom: 8,
+    textAlign: "center",
+  },
 
-    emptyContainer: {
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        paddingHorizontal: 30,
-        paddingTop: 80,
-    },
+  emptyText: {
+    fontSize: 14,
+    color: "#777",
+    textAlign: "center",
+    lineHeight: 22,
+  },
 
-    emptyTitle: {
-        fontSize: 20,
-        fontWeight: "700",
-        color: COLORS.black,
-        marginBottom: 8,
-        textAlign: "center",
-    },
-
-    emptyText: {
-        fontSize: 14,
-        color: "#777",
-        textAlign: "center",
-        lineHeight: 22,
-    },
-
+  keyword: {
+    fontWeight: "700",
+    color: COLORS.black,
+  },
 });
